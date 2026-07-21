@@ -32,6 +32,7 @@
 #    make git-amend           DRY_RUN=1   · skip git commit --amend
 #    make git-clean            DRY_RUN=1   · preview cleanup without removing
 #    make git-protect-default-branch DRY_RUN=1 · preview GitHub branch protection
+#    make repository-bootstrap DRY_RUN=1 · preview local and GitHub repository setup
 #    (git-status, git-diff, git-log, git-add-fuzzy, git-diff-fuzzy, git-search are read-only)
 
 DRY_RUN ?= 0
@@ -56,7 +57,8 @@ PROTECTED_BRANCHES ?= master dev rc imgbot
 GIT_PROTECTION_REQUIRED_APPROVALS ?= 0
 
 .PHONY: help-git git-add git-commit git-cm git-add-commit git-push git-pull git-status git-diff git-log git-setup git-sync git-diff-dev git-diff-rc git-diff-here \
-        git-add-fuzzy git-amend git-clean git-prune-branches git-diff-fuzzy git-search git-protect-default-branch
+        git-add-fuzzy git-amend git-clean git-prune-branches git-diff-fuzzy git-search git-protect-default-branch \
+        git-configure-changelog-labels repository-bootstrap changelog-update
 
 # ═══════════════════════════════════════════════════════════════
 # 🔀 HELP-GIT - Show Git operations
@@ -83,16 +85,19 @@ help-git: ## Show Git operation targets
 	@printf "  make git-sync             Rebase topic worktrees onto origin/master\n"
 	@printf "  make git-diff-here        Compare the worktree with the base branch\n"
 	@printf "  make git-protect-default-branch\n"
-	@printf "                            Require PRs before updating the GitHub default branch\n"
+	@printf "                            Require PRs and successful CI before updating the default branch\n"
+	@printf "  make repository-bootstrap Install hooks, configure changelog labels, and protect the default branch\n"
+	@printf "  make changelog-update PR=<number>\n"
+	@printf "                            Generate the changelog entry for a pull request\n"
 	@printf "\nRun make help-aliases for compatibility aliases. Set DRY_RUN=1 to preview mutating targets.\n"
-	@printf "Quality Gate bootstrap alone: $(BLUE)make hooks-install$(NC) (see make help-hooks).\n"
+	@printf "Run $(BLUE)make repository-bootstrap$(NC) after cloning this repository.\n"
 
 # ═══════════════════════════════════════════════════════════════
 # 🛡️  GIT-PROTECT-DEFAULT-BRANCH - Require pull requests on GitHub
 # ═══════════════════════════════════════════════════════════════
 # ──── Protection: Resolves the current GitHub repo and its default branch ────
 # ──── Usage: make git-protect-default-branch [GIT_PROTECTION_REQUIRED_APPROVALS=1] ────
-git-protect-default-branch: ## Require PRs before updating the GitHub default branch
+git-protect-default-branch: ## Require PRs and successful CI before updating the GitHub default branch
 	@set -eu; \
 	if ! command -v gh > /dev/null 2>&1; then \
 		printf "$(RED)  ✗ GitHub CLI (gh) is required$(NC)\n"; \
@@ -113,18 +118,75 @@ git-protect-default-branch: ## Require PRs before updating the GitHub default br
 		printf "$(RED)  ✗ could not resolve a GitHub repository and default branch$(NC)\n"; \
 		exit 1; \
 	fi; \
-	PAYLOAD=$$(printf '%s' '{"required_status_checks":null,"enforce_admins":true,"required_pull_request_reviews":{"dismiss_stale_reviews":false,"require_code_owner_reviews":false,"required_approving_review_count":$(GIT_PROTECTION_REQUIRED_APPROVALS),"require_last_push_approval":false},"restrictions":null,"required_linear_history":false,"allow_force_pushes":false,"allow_deletions":false,"block_creations":false,"required_conversation_resolution":false,"lock_branch":false,"allow_fork_syncing":false}'); \
+	PAYLOAD=$$(printf '%s' '{"required_status_checks":{"strict":true,"contexts":["Run Pre-Commit Hooks","Validate changed shell scripts","Validate pull request changelog"]},"enforce_admins":true,"required_pull_request_reviews":{"dismiss_stale_reviews":false,"require_code_owner_reviews":false,"required_approving_review_count":$(GIT_PROTECTION_REQUIRED_APPROVALS),"require_last_push_approval":false},"restrictions":null,"required_linear_history":false,"allow_force_pushes":false,"allow_deletions":false,"block_creations":false,"required_conversation_resolution":false,"lock_branch":false,"allow_fork_syncing":false}'); \
 	printf "  $(DIM)repository:$(NC) $$REPOSITORY\n"; \
 	printf "  $(DIM)branch:$(NC)     $$DEFAULT_BRANCH\n"; \
 	printf "  $(DIM)approvals:$(NC)  $(GIT_PROTECTION_REQUIRED_APPROVALS)\n"; \
 	if [ "$(DRY_RUN)" = "1" ]; then \
-		printf "\n  ▶ [dry-run] would require pull requests and block direct/force pushes\n"; \
+		printf "\n  ▶ [dry-run] would require pull requests, the three CI checks, and block direct/force pushes\n"; \
 		exit 0; \
 	fi; \
 	printf '%s\n' "$$PAYLOAD" | gh api --method PUT \
 		"repos/$$REPOSITORY/branches/$$DEFAULT_BRANCH/protection" --input - > /dev/null; \
-	printf "\n$(GREEN)  ✓ protected $$DEFAULT_BRANCH: updates now require a pull request$(NC)\n\n"; \
+	printf "\n$(GREEN)  ✓ protected $$DEFAULT_BRANCH: updates require a pull request and successful CI$(NC)\n\n"; \
 	printf "  $(DIM)Administrators cannot bypass the rule; force-pushes and deletion are blocked.\n$(NC)"
+
+# ═══════════════════════════════════════════════════════════════
+# 🏷️  GIT-CONFIGURE-CHANGELOG-LABELS - Synchronize changelog labels
+# ═══════════════════════════════════════════════════════════════
+git-configure-changelog-labels: ## Create or update the changelog labels in GitHub
+	@set -eu; \
+	if ! command -v gh > /dev/null 2>&1; then \
+		printf "$(RED)  ✗ GitHub CLI (gh) is required$(NC)\n"; \
+		exit 1; \
+	fi; \
+	if ! gh auth status > /dev/null 2>&1; then \
+		printf "$(RED)  ✗ authenticate GitHub CLI first: gh auth login$(NC)\n"; \
+		exit 1; \
+	fi; \
+	if [ "$(DRY_RUN)" = "1" ]; then \
+		printf "  ▶ [dry-run] would synchronize changelog labels\n"; \
+		exit 0; \
+	fi; \
+	gh label create 'changelog:added' --color '0E8A16' --description 'Add an Unreleased changelog entry under Added' --force; \
+	gh label create 'changelog:changed' --color '1D76DB' --description 'Add an Unreleased changelog entry under Changed' --force; \
+	gh label create 'changelog:fixed' --color 'D73A4A' --description 'Add an Unreleased changelog entry under Fixed' --force; \
+	gh label create 'changelog:removed' --color '5319E7' --description 'Add an Unreleased changelog entry under Removed' --force; \
+	gh label create 'changelog:security' --color 'B60205' --description 'Add an Unreleased changelog entry under Security' --force; \
+	gh label create 'changelog:deprecated' --color 'FBCA04' --description 'Add an Unreleased changelog entry under Deprecated' --force; \
+	gh label create 'changelog:skip' --color 'FFFFFF' --description 'Skip changelog entry for this pull request' --force; \
+	printf "$(GREEN)  ✓ changelog labels synchronized$(NC)\n"
+
+# ═══════════════════════════════════════════════════════════════
+# 🚀 REPOSITORY-BOOTSTRAP - Configure a local clone and GitHub repository
+# ═══════════════════════════════════════════════════════════════
+repository-bootstrap: ## Install hooks, synchronize labels, and protect the default branch
+	@$(MAKE) -s hooks-install
+	@$(MAKE) -s git-configure-changelog-labels
+	@$(MAKE) -s git-protect-default-branch
+
+# ═══════════════════════════════════════════════════════════════
+# 📝 CHANGELOG-UPDATE - Generate the changelog entry for a pull request
+# ═══════════════════════════════════════════════════════════════
+changelog-update: ## Generate the changelog entry for PR=<number>
+	@set -eu; \
+	if [ -z "$(PR)" ]; then \
+		printf "$(RED)  ✗ provide PR=<number>$(NC)\n"; \
+		exit 1; \
+	fi; \
+	if ! command -v gh > /dev/null 2>&1; then \
+		printf "$(RED)  ✗ GitHub CLI (gh) is required$(NC)\n"; \
+		exit 1; \
+	fi; \
+	if [ "$(DRY_RUN)" = "1" ]; then \
+		printf "  ▶ [dry-run] would generate the changelog entry for PR #$(PR)\n"; \
+		exit 0; \
+	fi; \
+	PR_NUMBER=$$(gh pr view "$(PR)" --json number --jq '.number'); \
+	PR_URL=$$(gh pr view "$(PR)" --json url --jq '.url'); \
+	PR_TITLE=$$(gh pr view "$(PR)" --json title --jq '.title'); \
+	PR_LABELS=$$(gh pr view "$(PR)" --json labels --jq '.labels[].name'); \
+	CHANGELOG_FILE=CHANGELOG.md PR_NUMBER="$$PR_NUMBER" PR_URL="$$PR_URL" PR_TITLE="$$PR_TITLE" PR_LABELS="$$PR_LABELS" .github/scripts/update-pr-changelog.sh
 
 # ═══════════════════════════════════════════════════════════════
 # 💾 GIT-ADD - Stage all modified/new files for commit
