@@ -1,0 +1,105 @@
+name: Validate master changes
+
+on:
+  pull_request:
+    branches:
+      - master
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+      - unlabeled
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pre-commit:
+    name: Run Pre-Commit Hooks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Shell Quality Gate tools
+        run: sudo apt-get update && sudo apt-get install --yes shellcheck shfmt
+
+      - name: Run Pre-Commit Hooks
+        uses: pre-commit/action@v3.0.1
+
+  changed-shell:
+    name: Validate changed shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Shell Quality Gate tools
+        run: sudo apt-get update && sudo apt-get install --yes shellcheck shfmt
+
+      - name: Determine comparison base
+        id: range
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            base="$PR_BASE_SHA"
+          elif [[ "$EVENT_NAME" == "push" && ! "$BEFORE_SHA" =~ ^0+$ ]]; then
+            base="$BEFORE_SHA"
+          elif git rev-parse HEAD^ >/dev/null 2>&1; then
+            base="HEAD^"
+          else
+            base="$(git hash-object -t tree /dev/null)"
+          fi
+
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+
+      - name: Run Shell Quality Gate for changed scripts
+        shell: bash
+        env:
+          BASE: ${{ steps.range.outputs.base }}
+        run: RAVN_SHELL_QUALITY_SCOPE=range RAVN_SHELL_QUALITY_BASE="$BASE" .git-hooks/ravn-shell-quality
+
+      - name: Run changelog automation tests
+        shell: bash
+        run: bash tests/changelog-automation.sh
+
+  changelog:
+    name: Validate pull request changelog
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pull request
+        uses: actions/checkout@v4
+
+      - name: Read pull request labels
+        run: |
+          {
+            echo 'PR_LABELS<<EOF'
+            jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH"
+            echo EOF
+          } >> "$GITHUB_ENV"
+
+      - name: Validate committed changelog
+        env:
+          CHANGELOG_FILE: CHANGELOG.md
+          CHANGELOG_FAILURE_GUIDANCE: Generate the changelog locally and commit the result before requesting review.
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: .github/scripts/validate-pr-changelog.sh
