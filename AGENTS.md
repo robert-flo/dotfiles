@@ -62,15 +62,17 @@ Always prioritize the helper functions imported from [global_fn.sh](Scripts/glob
 - In `[[ ]]`, don't quote variables, but do quote string literals when comparing values (e.g., `[[ $branch == "dev" ]]`).
   > Note: this applies only inside `[[ ]]`. For command arguments outside `[[ ]]`, see the SC2086 rule in "ShellCheck & Scripting Safety" — there, quoting is always required.
 - Prefer `(( ))` over numeric operators inside `[[ ]]` (e.g., `(( count < 50 ))`, not `[[ $count -lt 50 ]]`).
-- For strings/paths with spaces, quote them instead of escaping spaces with `\ ` (e.g., `"$APP_DIR/Disk Usage.desktop"`, not `$APP_DIR/Disk\ Usage.desktop`).
+- For strings/paths with spaces, quote them instead of escaping spaces with a backslash (e.g., `"$APP_DIR/Disk Usage.desktop"`, not an unquoted path with escaped spaces).
 - Shebangs:
   - Standard bash scripts must use `#!/usr/bin/env bash` consistently (never `#!/usr/bin/env sh`).
   - Migration scripts executed via `sh` by the installer should use `#!/usr/bin/env sh` (or be POSIX compliant).
 - **`local` in functions**: every function-scoped variable must be declared with `local`. When the value comes from a command, declare the empty variable first and assign it on a separate line — never `local var=$(cmd)` on a single line, since it masks the command's exit code (SC2155). Correct example:
+
   ```bash
   local key_id=""
   key_id=$(gpg --list-secret-keys ... || true)
   ```
+
 - **Naming**:
   - Variables and functions: `snake_case`.
   - Read-only constants (colors, icons, script-level config): `UPPER_SNAKE_CASE` + `readonly`.
@@ -125,9 +127,11 @@ shfmt -i 2 -sr -kp -ci -d Scripts/
 `restore_cfg.psv` is the manifest that defines which files/directories are tracked between `Configs/` (repo) and `$HOME` (live system). It is the single source of truth consulted both by `restore_cfg.sh` (repo → `$HOME`, automatic) and by `ravn-dot` (bidirectional review — see "User Preferences" § Live Synchronization).
 
 1. **Adding files to tracking:** to add a configuration target to the restore system, insert a row using the format:
+
    ```text
    Flag|${HOME}/path/to/directory|file_name|dependency
    ```
+
    **Flags:**
    - `P` (Populate/Preserve) - Copy target from `Configs/` to destination ONLY if it does not exist. Prevents overwriting local user changes.
    - `S` (Sync) - Copy target from `Configs/` and overwrite local file.
@@ -161,6 +165,7 @@ To protect the user's active system configurations from accidental resets or unc
 
 > [!NOTE]
 > **Disambiguating "ravn" paths** — three distinct things share this name:
+>
 > - `Scripts/ravn/` — the RaVN engine source code, inside this repo (see "Repository Structure & Purpose").
 > - `~/.local/share/ravn/` — the live, installed configuration clone on the user's system. **Formerly** used directly for active development (deprecated practice) — today it should only be touched for tracking config updates or system-wide script execution, never for feature development.
 > - `~/Work/RaVN/dev` (and other worktrees under `~/Work/<repo>/`) — the **current, correct** location for all active development.
@@ -203,6 +208,7 @@ This repository mandates [Matt Pocock's engineering skills](https://github.com/m
 
 > [!IMPORTANT]
 > **Classify out loud, don't decide silently.** `/grill-with-docs` has `disable-model-invocation: true` by design — Matt Pocock deliberately reserved the decision to start an interview for the human, not the agent. Silently classifying a task as Trivial and jumping straight to `/implement` overrides that design choice. Instead:
+>
 > 1. Classify the task using the criteria above.
 > 2. **State the classification and the resulting path before writing any code** — e.g., *"Classifying this as Trivial — going straight to `/implement`. Say so if you'd rather start with `/grill-with-docs`."* This gives the user a cheap veto before work begins, not after.
 > 3. **When in doubt, default to the Full Pipeline**, not the shortcut — consistent with "Strict Operational Rules" § Anti-Rationalization below. The Fast-Track is for genuinely unambiguous, low-risk edits; if there's any real design or domain ambiguity, that ambiguity is exactly what `/grill-with-docs` exists to resolve.
@@ -223,17 +229,9 @@ This is the official main flow of the Matt Pocock skills (per `ask-matt`'s routi
 | 4 | `/implement` | Implement a piece of work from a spec or ticket, driving `/tdd` internally at agreed seams. Runs typechecking and tests regularly. | Working code, tests passing. No "vibe coding." |
 | 5 | `/code-review` | Two-axis parallel review of the diff since a fixed point — Standards (repo conventions) and Spec (does it match the ticket/PRD). | Side-by-side Standards vs. Spec report. |
 
-> [!IMPORTANT]
-> **Standard review framing**: every invocation of `/code-review` in this repository must be framed with this literal instruction:
->
-> ```text
-> Review this repository as if you are blocking or approving a production PR.
-> ```
->
-> This framing is mandatory and non-negotiable — it consistently produces a stricter, higher-signal review than a neutral "review this" prompt, and it is what's used everywhere `/code-review` is invoked in this repo (including "Task Execution Workflow" § Phase 4).
+**Standard review framing**: every invocation of `/code-review` in this repository must be framed with this literal instruction: `Review this repository as if you are blocking or approving a production PR.` This framing is mandatory and non-negotiable — it consistently produces a stricter, higher-signal review than a neutral "review this" prompt, and it is what's used everywhere `/code-review` is invoked in this repo (including "Task Execution Workflow" § Phase 4).
 
-> [!NOTE]
-> **Context hygiene** (per `ask-matt`): keep steps 1–3 in one unbroken context window — don't `/compact` or clear context until after `/to-tickets`, so grilling, spec, and tickets build on the same reasoning. Each `/implement` then starts fresh from the ticket. If a session approaches the model's effective reasoning window before `/to-tickets` is done, use `/handoff` rather than pushing on with degraded context.
+**Context hygiene** (per `ask-matt`): keep steps 1–3 in one unbroken context window — don't `/compact` or clear context until after `/to-tickets`, so grilling, spec, and tickets build on the same reasoning. Each `/implement` then starts fresh from the ticket. If a session approaches the model's effective reasoning window before `/to-tickets` is done, use `/handoff` rather than pushing on with degraded context.
 
 ### Decision Tree
 
@@ -329,19 +327,19 @@ This is the official main flow of the Matt Pocock skills (per `ask-matt`'s routi
 
 ### Phase 2 — Configuration & Synchronization
 
-4. **Update configuration templates** in `Configs/` (shell/zsh aliases, etc.) and add tracking rows to [restore_cfg.psv](Scripts/restore_cfg.psv) as needed (see "Configuration Tracking").
-5. **Sync `Configs/` → `$HOME`** immediately after every `Configs/` change (see "User Preferences" § Live Synchronization) — this is required to validate the change against the real, live environment in the next phase.
+1. **Update configuration templates** in `Configs/` (shell/zsh aliases, etc.) and add tracking rows to [restore_cfg.psv](Scripts/restore_cfg.psv) as needed (see "Configuration Tracking").
+2. **Sync `Configs/` → `$HOME`** immediately after every `Configs/` change (see "User Preferences" § Live Synchronization) — this is required to validate the change against the real, live environment in the next phase.
 
 ### Phase 3 — Testing & Validation
 
-6. **Run lint and syntax checks** on all touched scripts: `shellcheck <file>`, `shfmt -i 2 -sr -kp -ci -d <file>`, and `bash -n <file>` (see "Verification").
-7. **Run an isolated Docker test** via [Scripts/ravn/test-task.sh](Scripts/ravn/test-task.sh) to validate the task in a clean `archlinux:latest` container (see [Scripts/ravn/AGENTS.md](Scripts/ravn/AGENTS.md) § Testing Tasks in Isolation).
-8. **Validate live in `$HOME`, then sync back to the repo**:
+1. **Run lint and syntax checks** on all touched scripts: `shellcheck <file>`, `shfmt -i 2 -sr -kp -ci -d <file>`, and `bash -n <file>` (see "Verification").
+2. **Run an isolated Docker test** via [Scripts/ravn/test-task.sh](Scripts/ravn/test-task.sh) to validate the task in a clean `archlinux:latest` container (see [Scripts/ravn/AGENTS.md](Scripts/ravn/AGENTS.md) § Testing Tasks in Isolation).
+3. **Validate live in `$HOME`, then sync back to the repo**:
    - Work and test directly against the live files in `$HOME` — this is the only place things like Waybar rendering or a Hyprland reload can actually be confirmed (see "Visual Changes" for the specific screenshot verification rule when Waybar/layouts are touched).
    - Iterate until the change is 100% confirmed working and meets the user's requirements.
    - Copy the validated final state from `$HOME` back into `Configs/` (see "User Preferences" § Live Synchronization, `$HOME` → repo direction), so that `$HOME` and the repo are in sync before pushing. `ravn-dot` may optionally be pointed to by the agent as a suggestion for the user to manually audit the sync afterward, but the agent itself should not depend on it (it's interactive-only).
 
 ### Phase 4 — Deployment
 
-9. **Run `/code-review`** against the fixed point where the worktree branched off, using the standard review framing (see "Task Planning & Skills Workflow" § The Main Build Chain) — Standards + Spec review. Resolve any Blocker/Major findings before proceeding.
-10. **Commit, push, and merge into `dev`** via PR (see "Branching & Release Policy"). `dev` must never receive direct commits.
+1. **Run `/code-review`** against the fixed point where the worktree branched off, using the standard review framing (see "Task Planning & Skills Workflow" § The Main Build Chain) — Standards + Spec review. Resolve any Blocker/Major findings before proceeding.
+2. **Commit, push, and merge into `dev`** via PR (see "Branching & Release Policy"). `dev` must never receive direct commits.
