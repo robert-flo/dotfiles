@@ -7,16 +7,16 @@ documentation, and tests are all welcome.
 
 1. Fork the repository and clone your fork.
 
-2. From the repository root, configure the local Quality Gate and the GitHub
-   repository settings:
+2. From the repository root, configure the local Quality Gate:
 
    ```bash
    make repository-bootstrap
    ```
 
-   This installs the local pre-commit Entrypoint, synchronizes changelog
-   labels, and protects the default branch. Use `DRY_RUN=1` to preview
-   remote changes.
+   This installs the local pre-commit Entrypoint. Maintainers configuring the
+   canonical repository additionally run
+   `make repository-bootstrap CONFIGURE_REMOTE=1`; it synchronizes changelog
+   labels and replaces default-branch protection with the documented policy.
 
 3. Create a focused topic branch in an isolated worktree:
 

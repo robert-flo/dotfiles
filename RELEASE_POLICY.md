@@ -33,12 +33,31 @@ after it has already occurred.
 After cloning, run:
 
 ```bash
-make repository-bootstrap
+make repository-bootstrap CONFIGURE_REMOTE=1
 ```
 
-The target installs the local Quality Gate, synchronizes changelog labels, and
-configures the default-branch protection that enforces this policy. Use
-`DRY_RUN=1` to preview the remote changes.
+Maintainers use this command for the canonical repository. It installs the
+local Quality Gate, synchronizes changelog labels, and replaces the
+default-branch protection with the policy below. Contributors should run
+`make repository-bootstrap` to install only local hooks. Use `DRY_RUN=1`
+to preview remote changes.
+
+## Release lifecycle
+
+1. A maintainer creates a temporary `release/<YY.M.patch>` branch from the
+   current `master`.
+2. The release preparation moves every entry under `## Unreleased` into a
+   dated `## [YY.M.patch] - YYYY-MM-DD` section, preserving categories and
+   restoring an empty `Unreleased` section.
+3. The prepared release is validated in a pull request and merged into
+   `master`.
+4. From that merged commit, the maintainer creates the matching annotated tag
+   and GitHub Release. A release tag must point at the merge commit on
+   `master`, never at a topic branch.
+
+The changelog generator is intentionally pull-request scoped. Release
+preparation owns version headings and dates; it must not regenerate individual
+pull-request entries.
 
 ## CI events
 
