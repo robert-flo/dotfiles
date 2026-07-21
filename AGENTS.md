@@ -217,6 +217,9 @@ Refer to [RELEASE_POLICY.md](RELEASE_POLICY.md) for details. **The following rul
 
 > [!WARNING]
 > **This policy is currently enforced by convention only, not by tooling.** The pre-commit hook (see "Verification") checks formatting/linting, but does **not** currently block direct commits to `dev`, `rc`, or `master`. In practice, direct commits to `dev` happen regularly despite this rule. Until branch protection is implemented (at the hook level or via the git host), agents and developers must self-enforce this policy manually — treat it as strictly as if it were technically blocked.
+>
+> [!TIP]
+> **GitHub CLI (`gh`)**: always prefer `gh` for GitHub operations (issues, PRs, releases, repo metadata). **Do not use `gh repo sync`** — it can overwrite local changes and bypass the worktree isolation workflow. Use `git fetch` + `git rebase` instead for keeping branches up to date.
 
 ## Task Planning & Skills Workflow (Matt Pocock Skills)
 
