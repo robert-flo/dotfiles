@@ -37,6 +37,9 @@ jobs:
       - name: Run Pre-Commit Hooks
         uses: pre-commit/action@v3.0.1
 
+      - name: Run Make verification
+        run: make verify
+
   changed-shell:
     name: Validate changed shell scripts
     runs-on: ubuntu-latest
@@ -74,7 +77,3 @@ jobs:
         env:
           BASE: ${{ steps.range.outputs.base }}
         run: RAVN_SHELL_QUALITY_SCOPE=range RAVN_SHELL_QUALITY_BASE="$BASE" .git-hooks/ravn-shell-quality
-
-      - name: Run changelog automation tests
-        shell: bash
-        run: bash tests/changelog-automation.sh
