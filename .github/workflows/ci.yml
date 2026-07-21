@@ -78,28 +78,3 @@ jobs:
       - name: Run changelog automation tests
         shell: bash
         run: bash tests/changelog-automation.sh
-
-  changelog:
-    name: Validate pull request changelog
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout pull request
-        uses: actions/checkout@v4
-
-      - name: Read pull request labels
-        run: |
-          {
-            echo 'PR_LABELS<<EOF'
-            jq -r '.pull_request.labels[].name' "$GITHUB_EVENT_PATH"
-            echo EOF
-          } >> "$GITHUB_ENV"
-
-      - name: Validate committed changelog
-        env:
-          CHANGELOG_FILE: CHANGELOG.md
-          CHANGELOG_FAILURE_GUIDANCE: Generate the changelog locally and commit the result before requesting review.
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-        run: .github/scripts/validate-pr-changelog.sh

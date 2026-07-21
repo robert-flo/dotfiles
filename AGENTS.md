@@ -111,15 +111,21 @@ Shell details:
 
 ### Gate Bootstrap
 
-Activate or refresh the Entrypoint (verify tools on `PATH`, then `pre-commit install` — **does not** install OS packages):
+Configure the local Quality Gate in a cloned repository (verify tools on
+`PATH` and install the Entrypoint):
 
 ```bash
-make hooks-install
+make repository-bootstrap
 ```
 
 Required host tools: `pre-commit`, `shfmt`, `shellcheck`. On Arch, for example: `sudo pacman -S pre-commit shfmt shellcheck`.
 
-`make git-setup REPO=...` calls the **same** Gate Bootstrap after creating worktrees when the repo ships `make/hooks.mk` and `.pre-commit-config.yaml` (e.g. this dotfiles tree).
+Use `make hooks-install` when only the local Quality Gate Entrypoint needs
+refreshing. Maintainers configuring the canonical GitHub repository run
+`make repository-bootstrap CONFIGURE_REMOTE=1` to synchronize changelog
+labels and replace default-branch protection. `make git-setup REPO=...` calls
+the local bootstrap after creating worktrees when the repo ships `make/hooks.mk`
+and `.pre-commit-config.yaml`.
 
 ### Escape hatches
 
