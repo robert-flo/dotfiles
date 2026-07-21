@@ -13,10 +13,15 @@
 # Domains:
 #   - File Hygiene Gate
 #   - Doc Quality Gate (Strict Doc Profile; non-Docker markdownlint-cli2)
-#   - Shell Quality Gate lands in a follow-up ticket
+#   - Shell Quality Gate (RaVN local hook: .git-hooks/ravn-shell-quality)
 #
 # Node is pinned so pre-commit does not use system npm (npm 12+ rejects
 # flags that older pre-commit node env install paths still pass).
+#
+# Selective Hook Skip (shell only):
+#   SKIP=ravn-shell-quality git commit
+# Full Gate Bypass:
+#   git commit --no-verify
 
 default_language_version:
   node: 20.18.1
@@ -36,8 +41,6 @@ repos:
       - id: trailing-whitespace
         args: ["--markdown-linebreak-ext=md,mdx"]
 
-  # Official markdownlint-cli2 hook; language_version inherited from
-  # default_language_version so the toolchain is framework-managed (not Docker).
   - repo: local
     hooks:
       - id: markdownlint-cli2
@@ -49,3 +52,11 @@ repos:
         types: [markdown]
         # Local Agent Tree is gitignored; optional defense in depth for force-adds.
         exclude: ^\.agents/
+
+      # Shell Quality Gate: RaVN-owned script discovers staged shell itself.
+      - id: ravn-shell-quality
+        name: ravn-shell-quality
+        language: system
+        entry: .git-hooks/ravn-shell-quality
+        pass_filenames: false
+        always_run: true
