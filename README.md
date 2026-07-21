@@ -3,7 +3,7 @@
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the local setup, pull-request, and
-changelog workflow.
+Release Please workflow.
 
 ## License
 

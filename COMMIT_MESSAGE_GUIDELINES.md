@@ -29,16 +29,21 @@ This approach remains compatible with tools that parse Conventional Commit types
 
 ---
 
-## Changelog Commits
+## Release Please and SemVer
 
-When a commit only prepares a release by reorganizing `CHANGELOG.md`, use the
-documentation emoji:
+[Release Please](https://github.com/googleapis/release-please) reads the
+Conventional Commit type before the optional Gitmoji. It opens and maintains a
+release pull request, then updates `version.txt`, `CHANGELOG.md`, the
+`vX.Y.Z` tag, and the GitHub Release after that pull request is merged.
 
-```markdown
-chore(changelog): 📝 Prepare release <YY.M.patch>
-```
+- `feat`: a minor release.
+- `fix`: a patch release.
+- `feat!`, `fix!`, or a `BREAKING CHANGE:` footer: a major release.
+- Other types, including `docs`, `chore`, `ci`, `test`, and `refactor`, do not
+  produce a release by default.
 
-For example: `chore(changelog): 📝 Prepare release 26.7.0`.
+Do not manually edit `CHANGELOG.md` or create release tags. The generated
+release commit is owned by Release Please.
 
 ---
 

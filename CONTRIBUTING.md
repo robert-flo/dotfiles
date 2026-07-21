@@ -15,8 +15,8 @@ documentation, and tests are all welcome.
 
    This installs the local pre-commit Entrypoint. Maintainers configuring the
    canonical repository additionally run
-   `make repository-bootstrap CONFIGURE_REMOTE=1`; it synchronizes changelog
-   labels and replaces default-branch protection with the documented policy.
+   `make repository-bootstrap CONFIGURE_REMOTE=1`; it replaces default-branch
+   protection with the documented policy.
 
 3. Create a focused topic branch in an isolated worktree:
 
@@ -27,25 +27,25 @@ documentation, and tests are all welcome.
 4. Before opening a pull request, run the relevant checks:
 
    ```bash
-   pre-commit run --all-files
-   bash tests/changelog-automation.sh
+   make verify
    ```
 
 5. Commit atomically using the
    [commit message guidelines](COMMIT_MESSAGE_GUIDELINES.md), then push the
    branch and open a pull request targeting `master`.
 
-## Changelog
+## Releases and changelog
 
-Every pull request needs exactly one `changelog:<category>` label or
-`changelog:skip`. Generate and review the entry locally before committing:
+Use Conventional Commits with the optional Gitmoji after the type. Release
+Please recognizes `feat`, `fix`, and breaking changes by default; it owns the
+release pull request, `version.txt`, `CHANGELOG.md`, tags, and GitHub Releases.
+Do not add changelog labels or manually edit generated release artifacts.
+
+You can validate the checked-in release configuration locally:
 
 ```bash
-make changelog-update PR=<number>
+make release-check
 ```
-
-The pull-request workflow verifies that the committed result matches the
-selected label and pull-request metadata.
 
 ## Guidelines
 
@@ -63,4 +63,5 @@ selected label and pull-request metadata.
 - [Pull request template](.github/PULL_REQUEST_TEMPLATE.md)
 - [Commit message guidelines](COMMIT_MESSAGE_GUIDELINES.md)
 - [Release policy](RELEASE_POLICY.md)
+- [Release Please diagnostics](make/release.mk)
 - [Project README](README.md)
