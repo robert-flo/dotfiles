@@ -1,0 +1,19 @@
+# Strict Doc Profile — single canonical markdownlint config for the Doc Quality Gate.
+# Auto-discovered by markdownlint-cli2; do not add parallel .json / -strict twins.
+
+default: true
+
+# Repository-specific HTML conventions (badges, image grids, centered blocks).
+MD033: false
+
+# Banner-style READMEs may start with HTML wrappers instead of an H1.
+MD041: false
+
+# HTML <img> tags used without separate markdown alt fields.
+MD045: false
+
+# Long lines are common in image links and localized/doc tables.
+MD013: false
+
+# Multiple H1 headings appear in some intentional doc layouts.
+MD025: false
