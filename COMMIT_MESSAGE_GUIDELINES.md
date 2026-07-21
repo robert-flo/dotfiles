@@ -35,7 +35,7 @@ When a commit only prepares a release by reorganizing `CHANGELOG.md`, use the
 documentation emoji:
 
 ```markdown
-chore(changelog): 📝 Update PR #<number>
+chore(changelog): 📝 Prepare release <YY.M.patch>
 ```
 
 For example: `chore(changelog): 📝 Prepare release 26.7.0`.
