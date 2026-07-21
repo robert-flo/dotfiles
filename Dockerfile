@@ -1,14 +1,8 @@
 FROM archlinux:latest
 
-RUN pacman -Syu --noconfirm --needed \
-    git \
-    github-cli \
-    gnupg \
-    openssh \
-    git-delta
+WORKDIR /app
 
-WORKDIR /opt/robertflo-dotfiles
-COPY . /opt/robertflo-dotfiles
-RUN chmod +x robertflo-dotfiles scripts/*
+COPY dockerfile.sh /app/dockerfile.sh
+RUN chmod +x /app/dockerfile.sh
 
-ENTRYPOINT ["/opt/robertflo-dotfiles/robertflo-dotfiles"]
+ENTRYPOINT ["/app/dockerfile.sh"]
