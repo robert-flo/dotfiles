@@ -12,6 +12,9 @@
 # Escape hatches (Quality Gate contract):
 #   Full Gate Bypass:      git commit --no-verify
 #   Selective Hook Skip:   SKIP=ravn-shell-quality git commit
+#
+# CI range mode:
+#   RAVN_SHELL_QUALITY_SCOPE=range RAVN_SHELL_QUALITY_BASE=<base> .git-hooks/ravn-shell-quality
 
 set -euo pipefail
 
@@ -19,8 +22,28 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 
 PASS=1
+QUALITY_SCOPE=${RAVN_SHELL_QUALITY_SCOPE:-staged}
+QUALITY_BASE=${RAVN_SHELL_QUALITY_BASE:-}
 
 STAGED_FILES=()
+case $QUALITY_SCOPE in
+  staged)
+    FILE_COMMAND=(git diff --name-only -z --cached --diff-filter=d)
+    ;;
+  range)
+    if [[ -z $QUALITY_BASE ]]; then
+      printf 'RAVN_SHELL_QUALITY_BASE is required when scope is range.\n' >&2
+      exit 2
+    fi
+
+    FILE_COMMAND=(git diff --name-only -z --diff-filter=ACMRT "$QUALITY_BASE" HEAD)
+    ;;
+  *)
+    printf 'Unsupported Shell Quality Gate scope: %s\n' "$QUALITY_SCOPE" >&2
+    exit 2
+    ;;
+esac
+
 while IFS= read -r -d '' file; do
   [[ ! -f $file ]] && continue
 
@@ -32,7 +55,7 @@ while IFS= read -r -d '' file; do
       STAGED_FILES+=("$file")
     fi
   fi
-done < <(git diff --name-only -z --cached --diff-filter=d 2> /dev/null || true)
+done < <("${FILE_COMMAND[@]}" 2> /dev/null || true)
 
 printf "\n\033[36m🔒 Shell Quality Gate\033[0m\n"
 printf "\033[36m────────────────────────────────────────────────────────────────────────────────\033[0m\n"
@@ -59,9 +82,11 @@ fi
 # changes are stashed before hooks, which already isolates the commit boundary
 # so format+re-stage cannot pull unrelated working-tree edits into the index.
 PARTIALLY_STAGED=()
-for file in "${STAGED_FILES[@]}"; do
-  git diff --quiet -- "$file" || PARTIALLY_STAGED+=("$file")
-done
+if [[ $QUALITY_SCOPE == staged ]]; then
+  for file in "${STAGED_FILES[@]}"; do
+    git diff --quiet -- "$file" || PARTIALLY_STAGED+=("$file")
+  done
+fi
 
 if ((${#PARTIALLY_STAGED[@]} > 0)); then
   printf "\033[31m  ✗ partially staged shell file(s) detected:\033[0m\n"
@@ -71,25 +96,37 @@ if ((${#PARTIALLY_STAGED[@]} > 0)); then
 fi
 
 # ── shfmt ───────────────────────────────────────────────────────
-printf "  shfmt format...              "
+if [[ $QUALITY_SCOPE == staged ]]; then
+  printf "  shfmt format...              "
 
-RESTAGED=0
-for file in "${STAGED_FILES[@]}"; do
-  if ! SHFMT_OUT=$(shfmt -i 2 -sr -kp -ci -w -- "$file" 2>&1); then
-    printf "\033[31m✗ failed\033[0m\n"
+  RESTAGED=0
+  for file in "${STAGED_FILES[@]}"; do
+    if ! SHFMT_OUT=$(shfmt -i 2 -sr -kp -ci -w -- "$file" 2>&1); then
+      printf "\033[31m✗ failed\033[0m\n"
+      printf "\n%s\n" "$SHFMT_OUT"
+      exit 1
+    fi
+
+    if ! git diff --quiet -- "$file"; then
+      git add -- "$file"
+      RESTAGED=$((RESTAGED + 1))
+    fi
+  done
+
+  if ((RESTAGED > 0)); then
+    printf "\033[33m✎ reformatted %d file(s) — re-staged\033[0m\n" "$RESTAGED"
+  else
+    printf "\033[32m✓\033[0m\n"
+  fi
+else
+  printf "  shfmt format...              "
+
+  if ! SHFMT_OUT=$(shfmt -i 2 -sr -kp -ci -d -- "${STAGED_FILES[@]}" 2>&1); then
+    printf "\033[31m✗ formatting needed\033[0m\n"
     printf "\n%s\n" "$SHFMT_OUT"
     exit 1
   fi
 
-  if ! git diff --quiet -- "$file"; then
-    git add -- "$file"
-    RESTAGED=$((RESTAGED + 1))
-  fi
-done
-
-if ((RESTAGED > 0)); then
-  printf "\033[33m✎ reformatted %d file(s) — re-staged\033[0m\n" "$RESTAGED"
-else
   printf "\033[32m✓\033[0m\n"
 fi
 
@@ -105,6 +142,8 @@ else
 fi
 
 if ((PASS == 0)); then
+  printf "\n%s\n" "$SHELLCHECK_OUT"
+
   REPORT_DIR="${REPO_ROOT}/logs"
   mkdir -p "$REPORT_DIR"
   LOG_FILE="${REPORT_DIR}/shellcheck-report-$(date '+%Y%m%d-%H%M%S').log"
