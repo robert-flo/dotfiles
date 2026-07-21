@@ -55,6 +55,8 @@ GIT_REMOTE ?= origin
 BASE_BRANCH ?= master
 PROTECTED_BRANCHES ?= master dev rc imgbot
 GIT_PROTECTION_REQUIRED_APPROVALS ?= 0
+CONFIGURE_REMOTE ?= 0
+GIT_REPLACE_PROTECTION ?= 0
 
 .PHONY: help-git git-add git-commit git-cm git-add-commit git-push git-pull git-status git-diff git-log git-setup git-sync git-diff-dev git-diff-rc git-diff-here \
         git-add-fuzzy git-amend git-clean git-prune-branches git-diff-fuzzy git-search git-protect-default-branch \
@@ -86,11 +88,13 @@ help-git: ## Show Git operation targets
 	@printf "  make git-diff-here        Compare the worktree with the base branch\n"
 	@printf "  make git-protect-default-branch\n"
 	@printf "                            Require PRs and successful CI before updating the default branch\n"
-	@printf "  make repository-bootstrap Install hooks, configure changelog labels, and protect the default branch\n"
+	@printf "  make repository-bootstrap Install the local Quality Gate\n"
+	@printf "  make repository-bootstrap CONFIGURE_REMOTE=1\n"
+	@printf "                            Also synchronize labels and protect the default branch\n"
 	@printf "  make changelog-update PR=<number>\n"
 	@printf "                            Generate the changelog entry for a pull request\n"
 	@printf "\nRun make help-aliases for compatibility aliases. Set DRY_RUN=1 to preview mutating targets.\n"
-	@printf "Run $(BLUE)make repository-bootstrap$(NC) after cloning this repository.\n"
+	@printf "Run $(BLUE)make repository-bootstrap$(NC) after cloning. Maintainers add $(BLUE)CONFIGURE_REMOTE=1$(NC).\n"
 
 # ═══════════════════════════════════════════════════════════════
 # 🛡️  GIT-PROTECT-DEFAULT-BRANCH - Require pull requests on GitHub
@@ -99,6 +103,10 @@ help-git: ## Show Git operation targets
 # ──── Usage: make git-protect-default-branch [GIT_PROTECTION_REQUIRED_APPROVALS=1] ────
 git-protect-default-branch: ## Require PRs and successful CI before updating the GitHub default branch
 	@set -eu; \
+	if [ "$(GIT_REPLACE_PROTECTION)" != "1" ]; then \
+		printf "$(YELLOW)  ⚠  refusing to replace branch protection without GIT_REPLACE_PROTECTION=1$(NC)\n"; \
+		exit 1; \
+	fi; \
 	if ! command -v gh > /dev/null 2>&1; then \
 		printf "$(RED)  ✗ GitHub CLI (gh) is required$(NC)\n"; \
 		exit 1; \
@@ -118,7 +126,7 @@ git-protect-default-branch: ## Require PRs and successful CI before updating the
 		printf "$(RED)  ✗ could not resolve a GitHub repository and default branch$(NC)\n"; \
 		exit 1; \
 	fi; \
-	PAYLOAD=$$(printf '%s' '{"required_status_checks":{"strict":true,"contexts":["Run Pre-Commit Hooks","Validate changed shell scripts","Validate pull request changelog"]},"enforce_admins":true,"required_pull_request_reviews":{"dismiss_stale_reviews":false,"require_code_owner_reviews":false,"required_approving_review_count":$(GIT_PROTECTION_REQUIRED_APPROVALS),"require_last_push_approval":false},"restrictions":null,"required_linear_history":false,"allow_force_pushes":false,"allow_deletions":false,"block_creations":false,"required_conversation_resolution":false,"lock_branch":false,"allow_fork_syncing":false}'); \
+	PAYLOAD=$$(printf '%s' '{"required_status_checks":{"strict":true,"contexts":["Run Pre-Commit Hooks","Validate changed shell scripts","Validate committed changelog"]},"enforce_admins":true,"required_pull_request_reviews":{"dismiss_stale_reviews":false,"require_code_owner_reviews":false,"required_approving_review_count":$(GIT_PROTECTION_REQUIRED_APPROVALS),"require_last_push_approval":false},"restrictions":null,"required_linear_history":false,"allow_force_pushes":false,"allow_deletions":false,"block_creations":false,"required_conversation_resolution":false,"lock_branch":false,"allow_fork_syncing":false}'); \
 	printf "  $(DIM)repository:$(NC) $$REPOSITORY\n"; \
 	printf "  $(DIM)branch:$(NC)     $$DEFAULT_BRANCH\n"; \
 	printf "  $(DIM)approvals:$(NC)  $(GIT_PROTECTION_REQUIRED_APPROVALS)\n"; \
@@ -160,10 +168,14 @@ git-configure-changelog-labels: ## Create or update the changelog labels in GitH
 # ═══════════════════════════════════════════════════════════════
 # 🚀 REPOSITORY-BOOTSTRAP - Configure a local clone and GitHub repository
 # ═══════════════════════════════════════════════════════════════
-repository-bootstrap: ## Install hooks, synchronize labels, and protect the default branch
+repository-bootstrap: ## Install local hooks; set CONFIGURE_REMOTE=1 for maintainer GitHub setup
 	@$(MAKE) -s hooks-install
-	@$(MAKE) -s git-configure-changelog-labels
-	@$(MAKE) -s git-protect-default-branch
+	@if [ "$(CONFIGURE_REMOTE)" = "1" ]; then \
+		$(MAKE) -s git-configure-changelog-labels; \
+		$(MAKE) -s git-protect-default-branch GIT_REPLACE_PROTECTION=1; \
+	else \
+		printf "  $(DIM)⊘ remote repository setup skipped; maintainers use CONFIGURE_REMOTE=1$(NC)\n"; \
+	fi
 
 # ═══════════════════════════════════════════════════════════════
 # 📝 CHANGELOG-UPDATE - Generate the changelog entry for a pull request
