@@ -209,14 +209,14 @@ To protect the user's active system configurations from accidental resets or unc
 
 ## Branching & Release Policy
 
-Refer to [RELEASE_POLICY.md](RELEASE_POLICY.md) for details. **The following rules are non-negotiable and must be strictly followed by all agents and developers:**
+All changes must be created on temporary topic branches in isolated worktrees. **The following rules are non-negotiable and must be strictly followed by all agents and developers:**
 
-- **`dev`**: The active branch for all features and PRs. **Under no circumstances should `dev` receive direct commits.** It must always be fed exclusively by auxiliary topic/feature branches created in isolated worktrees (via `git-create-worktree`, in `Configs/.local/bin/` — see "Repository Structure & Purpose") and merged in.
-- **`rc`** (Release Candidate): Receives a merge from `dev` on the second-to-last Friday of the month. Frozen for regression testing and bug fixes only. **`rc` only receives merges from `dev`.**
-- **`master`**: Receives a merge from `rc` on the last Friday of the month for the official monthly version release, tagged as `YY.M.patch` (e.g., `26.4.3`) — consistent with the versioning scheme already used by migration scripts in `Scripts/migrations/`.
+- **Temporary topic branches**: Create every change on a dedicated branch using `git-create-worktree`; push it to the remote and open a pull request.
+- **`master`**: The integration branch. It must never receive direct commits. Merge all changes into `master` only through pull requests from remote topic branches.
+- **Merging**: Before merging, rebase the topic branch onto `origin/master`; do not merge `master` into the topic branch. After rebasing, update the remote branch only with `git push --force-with-lease`.
 
 > [!WARNING]
-> **This policy is currently enforced by convention only, not by tooling.** The pre-commit hook (see "Verification") checks formatting/linting, but does **not** currently block direct commits to `dev`, `rc`, or `master`. In practice, direct commits to `dev` happen regularly despite this rule. Until branch protection is implemented (at the hook level or via the git host), agents and developers must self-enforce this policy manually — treat it as strictly as if it were technically blocked.
+> **This policy is currently enforced by convention only, not by tooling.** The pre-commit hook (see "Verification") checks formatting/linting, but does **not** currently block direct commits to `master`. Until branch protection is implemented (at the hook level or via the git host), agents and developers must self-enforce this policy manually — treat it as strictly as if it were technically blocked.
 >
 > [!TIP]
 > **GitHub CLI (`gh`)**: always prefer `gh` for GitHub operations (issues, PRs, releases, repo metadata). **Do not use `gh repo sync`** — it can overwrite local changes and bypass the worktree isolation workflow. Use `git fetch` + `git rebase` instead for keeping branches up to date.
@@ -318,7 +318,7 @@ This is the official main flow of the Matt Pocock skills (per `ask-matt`'s routi
                           (Standards + Spec)
                                     │
                                     ▼
-                       Commit → push → PR into `dev`
+                       Commit → push → PR into `master`
                     (never direct commits — see
                      "Branching & Release Policy")
 ```
@@ -348,7 +348,7 @@ This is the official main flow of the Matt Pocock skills (per `ask-matt`'s routi
 
 ### Phase 1 — Environment & Task Setup
 
-1. **Create an isolated worktree** for the task via `git-create-worktree` (see "Git Worktree Workflow"). No direct commits to `dev`.
+1. **Create an isolated worktree** for the task via `git-create-worktree` (see "Git Worktree Workflow"). No direct commits to `master`.
 2. **Determine the best implementation approach** for the requested task. When feasible, prefer creating a task module under `Scripts/ravn/tasks/<category>/<NN>-<name>.sh` following the module contract (see [Scripts/ravn/AGENTS.md](Scripts/ravn/AGENTS.md) § Adding a task module); otherwise choose the most appropriate mechanism (script, config edit, migration, etc.).
 3. **Register new packages**, only if the task requires system packages:
    - [Scripts/pkg_core.lst](Scripts/pkg_core.lst) — base packages installed for every user.
@@ -373,4 +373,4 @@ This is the official main flow of the Matt Pocock skills (per `ask-matt`'s routi
 ### Phase 4 — Deployment
 
 1. **Run `/code-review`** against the fixed point where the worktree branched off, using the standard review framing (see "Task Planning & Skills Workflow" § The Main Build Chain) — Standards + Spec review. Resolve any Blocker/Major findings before proceeding.
-2. **Commit, push, and merge into `dev`** via PR (see "Branching & Release Policy"). `dev` must never receive direct commits.
+2. **Commit, push, and merge into `master`** via PR from a remote topic branch (see "Branching & Release Policy"). `master` must never receive direct commits.
