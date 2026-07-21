@@ -79,12 +79,13 @@ help-git: ## Show Git operation targets
 	@printf "  make git-clean             Review and remove merged worktrees/branches\n"
 	@printf "  make git-diff-fuzzy       Select a commit to inspect\n"
 	@printf "  make git-search           Search history by CODE or MSG\n"
-	@printf "  make git-setup            Create a bare clone and worktrees\n"
+	@printf "  make git-setup            Create a bare clone and worktrees (+ Gate Bootstrap when present)\n"
 	@printf "  make git-sync             Rebase topic worktrees onto origin/master\n"
 	@printf "  make git-diff-here        Compare the worktree with the base branch\n"
 	@printf "  make git-protect-default-branch\n"
 	@printf "                            Require PRs before updating the GitHub default branch\n"
 	@printf "\nRun make help-aliases for compatibility aliases. Set DRY_RUN=1 to preview mutating targets.\n"
+	@printf "Quality Gate bootstrap alone: $(BLUE)make hooks-install$(NC) (see make help-hooks).\n"
 
 # ═══════════════════════════════════════════════════════════════
 # 🛡️  GIT-PROTECT-DEFAULT-BRANCH - Require pull requests on GitHub
@@ -463,12 +464,44 @@ git-setup: ## Clone a repo as bare + create all worktrees with upstream (use REP
 		$$SCRIPT $(REPO); \
 	fi; \
 	fi
+	@# Gate Bootstrap: same target as `make hooks-install`, when this repo ships it.
+	@REPO_NAME=$$(basename "$(REPO)" .git); \
+	WORKTREE_DIR=$${WORKTREES_HOME:-$$HOME/Work}/$$REPO_NAME; \
+	BOOT_WT=""; \
+	for candidate in master main dev; do \
+	  if [ -f "$$WORKTREE_DIR/$$candidate/make/hooks.mk" ] && \
+	     [ -f "$$WORKTREE_DIR/$$candidate/.pre-commit-config.yaml" ]; then \
+	    BOOT_WT="$$WORKTREE_DIR/$$candidate"; \
+	    break; \
+	  fi; \
+	done; \
+	if [ -z "$$BOOT_WT" ] && [ -d "$$WORKTREE_DIR" ]; then \
+	  for dir in "$$WORKTREE_DIR"/*/; do \
+	    if [ -f "$${dir}make/hooks.mk" ] && [ -f "$${dir}.pre-commit-config.yaml" ]; then \
+	      BOOT_WT="$${dir%/}"; \
+	      break; \
+	    fi; \
+	  done; \
+	fi; \
+	if [ -n "$$BOOT_WT" ]; then \
+	  printf "\n$(CYAN)🔒 git-setup · Quality Gate bootstrap$(NC)\n"; \
+	  printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"; \
+	  printf "  $(DIM)worktree:$(NC) $$BOOT_WT\n"; \
+	  if [ "$(DRY_RUN)" = "1" ]; then \
+	    printf "  ▶ [dry-run] would run: make -C $$BOOT_WT hooks-install\n"; \
+	  else \
+	    $(MAKE) -C "$$BOOT_WT" hooks-install; \
+	  fi; \
+	else \
+	  printf "\n  $(DIM)⊘ no Gate Bootstrap in this repo (make/hooks.mk absent) — skipped$(NC)\n"; \
+	fi
 	@printf "\n$(GREEN)  ✓ done$(NC)\n"
 	@REPO_NAME=$$(basename "$(REPO)" .git); \
 	WTHOME=$${WORKTREES_HOME:-$$HOME/Work}; \
 	printf "\n$(YELLOW)📋 Quick Actions:$(NC)\n"; \
 	printf "$(DIM)────────────────────────────────────────────────────────────────────────────────$(NC)\n"; \
 	printf "  • enter a worktree:  $(BLUE)cd $$WTHOME/$$REPO_NAME/<branch>$(NC)\n"; \
+	printf "  • refresh hooks:     $(BLUE)make hooks-install$(NC)\n"; \
 	printf "  • check git status:  $(BLUE)make git-status$(NC)\n\n"
 
 # ═══════════════════════════════════════════════════════════════
