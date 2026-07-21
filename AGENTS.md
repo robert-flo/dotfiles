@@ -97,11 +97,11 @@ Always prioritize the helper functions imported from [global_fn.sh](Scripts/glob
 
 The **Quality Gate** is owned by the **pre-commit framework** as the sole Git **Entrypoint** (do not set a competing `core.hooksPath`). It runs three domains on commit:
 
-| Domain | What it does |
-| --- | --- |
-| **File Hygiene Gate** | large files, merge conflict markers, symlinks, structured-file checks, trailing whitespace, EOF |
-| **Doc Quality Gate** | Strict Doc Profile via framework-managed `markdownlint-cli2` (not Docker) |
-| **Shell Quality Gate** | RaVN local hook `.git-hooks/ravn-shell-quality`: staged shell only, `shfmt` then `shellcheck` |
+| Domain                 | What it does                                                                                    |
+| ---------------------- | ----------------------------------------------------------------------------------------------- |
+| **File Hygiene Gate**  | large files, merge conflict markers, symlinks, structured-file checks, trailing whitespace, EOF |
+| **Doc Quality Gate**   | Strict Doc Profile via framework-managed `markdownlint-cli2` (not Docker)                       |
+| **Shell Quality Gate** | RaVN local hook `.git-hooks/ravn-shell-quality`: staged shell only, `shfmt` then `shellcheck`   |
 
 Shell details:
 
@@ -123,10 +123,10 @@ Required host tools: `pre-commit`, `shfmt`, `shellcheck`. On Arch, for example: 
 
 ### Escape hatches
 
-| Level | Mechanism | Effect |
-| --- | --- | --- |
-| **Full Gate Bypass** | `git commit --no-verify` | Skips the entire Quality Gate for that commit |
-| **Selective Hook Skip** | `SKIP=<hook-id>[,...]` | Skips only named hooks (e.g. `SKIP=ravn-shell-quality`) |
+| Level                   | Mechanism                | Effect                                                  |
+| ----------------------- | ------------------------ | ------------------------------------------------------- |
+| **Full Gate Bypass**    | `git commit --no-verify` | Skips the entire Quality Gate for that commit           |
+| **Selective Hook Skip** | `SKIP=<hook-id>[,...]`   | Skips only named hooks (e.g. `SKIP=ravn-shell-quality`) |
 
 Do **not** use `SKIP_HOOKS=1` — it is retired and is not part of the contract.
 
@@ -166,6 +166,7 @@ Note: `shellcheck Scripts/**/*.sh` needs `shopt -s globstar` in bash for deep re
    - `O` (Overwrite) - Force overwrite. Overwrites everything recursively if the target is a directory.
    - `B` (Backup) - Backs up the target before modifying.
    - `I` (Install/Import) - Imports or configures associated packages.
+
 2. **Reviewing and syncing changes:** run `ravn-dot`. It reads `restore_cfg.psv` to determine which files are tracked, diffs each one between `Configs/` and `$HOME`, and presents an interactive `fzf` menu per differing file, where you can view the diff, resolve visually with `meld` or `nvim`, or choose which side to keep (repo → `$HOME` or `$HOME` → repo). This is the current, human-driven source of truth for reconciling drift — see "User Preferences" § Live Synchronization for how this fits into the agent's automated workflow.
 
 ## User Preferences
@@ -192,20 +193,18 @@ Note: `shellcheck Scripts/**/*.sh` needs `shopt -s globstar` in bash for deep re
 To protect the user's active system configurations from accidental resets or uncommitted code loss during development, and to maintain task isolation:
 
 > [!NOTE]
-> **Disambiguating "ravn" paths** — three distinct things share this name:
+> **Development paths** — two distinct locations are relevant:
 >
 > - `Scripts/ravn/` — the RaVN engine source code, inside this repo (see "Repository Structure & Purpose").
-> - `~/.local/share/ravn/` — the live, installed configuration clone on the user's system. **Formerly** used directly for active development (deprecated practice) — today it should only be touched for tracking config updates or system-wide script execution, never for feature development.
-> - `~/Work/RaVN/dev` (and other worktrees under `~/Work/<repo>/`) — the **current, correct** location for all active development.
+> - `/wt/dotfiles/master` (and other worktrees under `/wt/<repo>/`) — the **current, correct** location for all active development.
 
-- **Isolated Development in `~/Work`**: All active development work must be carried out inside worktrees under `~/Work/<repo>/` (which are created from the bare repository at `~/.local/share/git-bare/<repo>`).
-- **No Direct Modification in Live Clone**: Do not perform development or commit changes directly inside the live configuration clone located at `~/.local/share/ravn/` (except when updating tracking config files or executing system-wide scripts).
+- **Isolated Development in `/wt/`**: All active development work must be carried out inside worktrees under `/wt/<repo>/` (which are created from the bare repository at `~/.local/share/git-bare/<repo>`).
 - **Automation Utilities** (all restored under `~/.local/bin/` — see "Repository Structure & Purpose" for their source in `Configs/.local/bin/`):
   - `git-create-worktree` for general feature/chore branches.
   - `git-issue-worktree` for GitHub-tracked issues.
   - > [!IMPORTANT]
     > **MANDATORY**: `git-bare-clone` must always be used to create bare repositories (whether invoked via a `make` target or manually) — never create a bare repo with raw `git` commands. This is a recurring compliance gap: agents have created bare repos manually instead of using this script.
-- **Workflow Benefit**: Developing under `~/Work` isolates development changes from host configuration restoration processes. This eliminates the need to manually disable ravn tracking (e.g. setting `ravn=false` in `Scripts/ravn/config/packages.conf`) to protect local changes from being overwritten during installer or `restore_cfg.sh` runs.
+- **Workflow Benefit**: Developing under `/wt/` isolates development changes from host configuration restoration processes. This eliminates the need to manually disable ravn tracking (e.g. setting `ravn=false` in `Scripts/ravn/config/packages.conf`) to protect local changes from being overwritten during installer or `restore_cfg.sh` runs.
 
 ## Branching & Release Policy
 
@@ -230,7 +229,7 @@ This repository mandates [Matt Pocock's engineering skills](https://github.com/m
 
 ### Task Sizing (before choosing a path)
 
-> This classification is a local convention for this repository — it does not come from the Matt Pocock skills repo itself, which branches on "single-session vs. multi-session" rather than "trivial vs. engineering." It is layered on top of the official flow below, not a replacement for it. Do not confuse this with the `/triage` skill (below), which is a different thing: `/triage` moves *incoming* issues/PRs through a bug/enhancement state machine — it has nothing to do with sizing a task you're about to start.
+> This classification is a local convention for this repository — it does not come from the Matt Pocock skills repo itself, which branches on "single-session vs. multi-session" rather than "trivial vs. engineering." It is layered on top of the official flow below, not a replacement for it. Do not confuse this with the `/triage` skill (below), which is a different thing: `/triage` moves _incoming_ issues/PRs through a bug/enhancement state machine — it has nothing to do with sizing a task you're about to start.
 
 1. **Trivial / Administrative Tasks** — simple config changes (e.g., `.gitignore`, env var templates), doc typo fixes, minor dependency bumps.
    - **Fast-Track**: skip straight to `/implement`, then close with `/code-review`.
@@ -241,7 +240,7 @@ This repository mandates [Matt Pocock's engineering skills](https://github.com/m
 > **Classify out loud, don't decide silently.** `/grill-with-docs` has `disable-model-invocation: true` by design — Matt Pocock deliberately reserved the decision to start an interview for the human, not the agent. Silently classifying a task as Trivial and jumping straight to `/implement` overrides that design choice. Instead:
 >
 > 1. Classify the task using the criteria above.
-> 2. **State the classification and the resulting path before writing any code** — e.g., *"Classifying this as Trivial — going straight to `/implement`. Say so if you'd rather start with `/grill-with-docs`."* This gives the user a cheap veto before work begins, not after.
+> 2. **State the classification and the resulting path before writing any code** — e.g., _"Classifying this as Trivial — going straight to `/implement`. Say so if you'd rather start with `/grill-with-docs`."_ This gives the user a cheap veto before work begins, not after.
 > 3. **When in doubt, default to the Full Pipeline**, not the shortcut — consistent with "Strict Operational Rules" § Anti-Rationalization below. The Fast-Track is for genuinely unambiguous, low-risk edits; if there's any real design or domain ambiguity, that ambiguity is exactly what `/grill-with-docs` exists to resolve.
 
 ### The Main Build Chain
@@ -252,13 +251,13 @@ This repository mandates [Matt Pocock's engineering skills](https://github.com/m
 
 This is the official main flow of the Matt Pocock skills (per `ask-matt`'s routing logic). Each step is **user-invoked only** (the agent does not reach for these on its own) — but per "Strict Operational Rules" below, once a task is classified as an Engineering Task, the agent must drive this chain itself in sequence rather than waiting to be prompted step by step.
 
-| Step | Command | Purpose | Exit Gate |
-| :---: | :--- | :--- | :--- |
-| 1 | `/grill-with-docs` | A relentless interview to sharpen a plan or design, writing resolved terms to `CONTEXT.md` and hard decisions as ADRs as it goes. | Design ambiguities resolved; glossary/ADRs updated. |
-| 2 | `/to-spec` | Synthesize the current conversation into a spec (no re-interviewing) and publish it to the issue tracker with the `ready-for-agent` label. | Spec published to the tracker. |
-| 3 | `/to-tickets` | Break the spec/conversation into tracer-bullet tickets, each declaring its blocking edges, published to the tracker. | Atomic ticket set with blocking edges published. |
-| 4 | `/implement` | Implement a piece of work from a spec or ticket, driving `/tdd` internally at agreed seams. Runs typechecking and tests regularly. | Working code, tests passing. No "vibe coding." |
-| 5 | `/code-review` | Two-axis parallel review of the diff since a fixed point — Standards (repo conventions) and Spec (does it match the ticket/PRD). | Side-by-side Standards vs. Spec report. |
+| Step | Command            | Purpose                                                                                                                                    | Exit Gate                                           |
+| :--: | :----------------- | :----------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------- |
+|  1   | `/grill-with-docs` | A relentless interview to sharpen a plan or design, writing resolved terms to `CONTEXT.md` and hard decisions as ADRs as it goes.          | Design ambiguities resolved; glossary/ADRs updated. |
+|  2   | `/to-spec`         | Synthesize the current conversation into a spec (no re-interviewing) and publish it to the issue tracker with the `ready-for-agent` label. | Spec published to the tracker.                      |
+|  3   | `/to-tickets`      | Break the spec/conversation into tracer-bullet tickets, each declaring its blocking edges, published to the tracker.                       | Atomic ticket set with blocking edges published.    |
+|  4   | `/implement`       | Implement a piece of work from a spec or ticket, driving `/tdd` internally at agreed seams. Runs typechecking and tests regularly.         | Working code, tests passing. No "vibe coding."      |
+|  5   | `/code-review`     | Two-axis parallel review of the diff since a fixed point — Standards (repo conventions) and Spec (does it match the ticket/PRD).           | Side-by-side Standards vs. Spec report.             |
 
 **Standard review framing**: every invocation of `/code-review` in this repository must be framed with this literal instruction: `Review this repository as if you are blocking or approving a production PR.` This framing is mandatory and non-negotiable — it consistently produces a stricter, higher-signal review than a neutral "review this" prompt, and it is what's used everywhere `/code-review` is invoked in this repo (including "Task Execution Workflow" § Phase 4).
 
@@ -330,16 +329,16 @@ This is the official main flow of the Matt Pocock skills (per `ask-matt`'s routi
 
 ### Strict Operational Rules & Anti-Rationalization
 
-- **No Parallel Paths**: The Matt Pocock skills chain is not a suggestion or one option among several — it is *the* workflow for this repository. The agent must not invent, improvise, or substitute its own ad-hoc planning process (its own informal "let me think through this" sequence, a custom checklist, a different ordering of steps) in place of `/grill-with-docs → /to-spec → /to-tickets → /implement → /code-review`. If a task is an Engineering Task, the path is already decided — the agent's job is to walk it, not to design an alternative.
+- **No Parallel Paths**: The Matt Pocock skills chain is not a suggestion or one option among several — it is _the_ workflow for this repository. The agent must not invent, improvise, or substitute its own ad-hoc planning process (its own informal "let me think through this" sequence, a custom checklist, a different ordering of steps) in place of `/grill-with-docs → /to-spec → /to-tickets → /implement → /code-review`. If a task is an Engineering Task, the path is already decided — the agent's job is to walk it, not to design an alternative.
 - **Internal by Default**: The agent must drive this chain itself, internally, as its own default operating procedure — not as something it only does when explicitly asked to "use the skills" or "follow Matt Pocock's workflow." Treat every applicable task as if the chain were already silently invoked the moment work begins, the same way "Style" or "ShellCheck & Scripting Safety" apply without needing to be requested.
 - **Absolute Sequentiality**: Never run `/implement` for an Engineering Task unless a valid spec (`/to-spec`) and broken-down tickets (`/to-tickets`) already exist to back it up.
 - **No Skipping Under Pressure**: Time pressure, an urgent tone from the user, a "just do it quickly," or the agent's own confidence that it "already understands the task" are not valid reasons to bypass a step. If a step feels unnecessary, that feeling is itself the signal to check with the user (per "Task Sizing") rather than to quietly skip it.
 - **Verification is Non-Negotiable**: Do not claim a task is complete based on intuition. `/implement` and `/code-review` exit gates require deterministic proof (passing tests, successful builds, explicit terminal confirmation) — see "Verification" for the RaVN-specific lint/test commands that back this up.
-- **The Socratic Mandate**: During `/grill-with-docs`, do not be agreeable. Actively find flaws, missing requirements, and architectural conflicts *before* a single line of production code is written.
+- **The Socratic Mandate**: During `/grill-with-docs`, do not be agreeable. Actively find flaws, missing requirements, and architectural conflicts _before_ a single line of production code is written.
 
 ### How this fits with RaVN's own workflow
 
-`/implement` (step 4) is where the generic Pocock flow meets RaVN-specific mechanics. "Task Execution Workflow" (below) is the detailed, repo-specific process — worktree isolation, package registration, config sync, Docker testing, live validation — that governs *how* `/implement` and the surrounding steps actually get carried out in this repository. Read the two together: this section decides *which skills to invoke and when*; "Task Execution Workflow" defines *what happens inside each phase* for RaVN specifically.
+`/implement` (step 4) is where the generic Pocock flow meets RaVN-specific mechanics. "Task Execution Workflow" (below) is the detailed, repo-specific process — worktree isolation, package registration, config sync, Docker testing, live validation — that governs _how_ `/implement` and the surrounding steps actually get carried out in this repository. Read the two together: this section decides _which skills to invoke and when_; "Task Execution Workflow" defines _what happens inside each phase_ for RaVN specifically.
 
 ## Task Execution Workflow
 
