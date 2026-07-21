@@ -373,8 +373,7 @@ ifndef EMBEDDED
 	@printf "$(CYAN)🔄 git-diff · repository changes$(NC)\n"
 	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
 endif
-	@if git diff --quiet 2>/dev/null && git diff --cached --quiet 2>/dev/null && \
-	   [ -z "$$(git ls-files --others --exclude-standard)" ]; then \
+	@if git diff --quiet 2>/dev/null; then \
 		printf "$(GREEN)  ✓ no uncommitted changes in repository$(NC)\n"; \
 	else \
 		if command -v hunk >/dev/null 2>&1; then \
@@ -383,9 +382,9 @@ endif
 			git diff --color=always 2>/dev/null || git diff; \
 		fi; \
 		printf "\n"; \
-		CHANGED_FILES=$$({ git diff --name-only; git diff --cached --name-only; git ls-files --others --exclude-standard; } 2>/dev/null | sort -u | wc -l); \
-		ADDED_LINES=$$({ git diff --numstat; git diff --cached --numstat; } 2>/dev/null | awk '{sum+=$$1} END {print sum+0}'); \
-		DELETED_LINES=$$({ git diff --numstat; git diff --cached --numstat; } 2>/dev/null | awk '{sum+=$$2} END {print sum+0}'); \
+		CHANGED_FILES=$$(git diff --name-only 2>/dev/null | wc -l); \
+		ADDED_LINES=$$(git diff --numstat 2>/dev/null | awk '{sum+=$$1} END {print sum+0}'); \
+		DELETED_LINES=$$(git diff --numstat 2>/dev/null | awk '{sum+=$$2} END {print sum+0}'); \
 		printf "  $(DIM)files:$(NC) $$CHANGED_FILES  $(GREEN)+$$ADDED_LINES$(NC)  $(RED)-$$DELETED_LINES$(NC)\n\n"; \
 		git --no-pager diff --stat --color=always 2>/dev/null || git --no-pager diff --stat; \
 		printf "\n"; \
@@ -547,7 +546,6 @@ git-sync: ## Rebase all topic branches from origin/master (local only)
 			printf "  $(BLUE)git -C $$REPO_DIR/$$f pull --rebase $(GIT_REMOTE) $(BASE_BRANCH)$(NC)\n"; \
 		done; \
 		printf "\n"; \
-		exit 1; \
 	else \
 		printf "\n$(GREEN)  ✓ all branches synced locally$(NC)\n"; \
 	fi
@@ -807,7 +805,6 @@ endif
 		printf "$(RED)  ✗ please specify CODE=\"string\" or MSG=\"query\" to search$(NC)\n"; \
 		printf "  example: $(BLUE)make git-search CODE=\"foo\"$(NC)\n"; \
 		printf "  example: $(BLUE)make git-search MSG=\"chore\"$(NC)\n"; \
-		exit 1; \
 	fi
 ifndef EMBEDDED
 	@printf "\n$(GREEN)  ✓ done$(NC)\n"
