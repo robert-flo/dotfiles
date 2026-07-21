@@ -1,0 +1,30 @@
+# Quality Gate — pre-commit framework Entrypoint
+#
+# Activate (preferred):
+#   make hooks-install
+#
+# Or manually:
+#   pre-commit install
+#   pre-commit run --all-files
+#
+# This config owns the sole Git pre-commit Entrypoint. Do not set
+# core.hooksPath to a second hook tree alongside it.
+#
+# Domains:
+#   - File Hygiene Gate (this ticket / current slice)
+#   - Doc Quality Gate and Shell Quality Gate land in follow-up tickets
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-json
+      - id: check-yaml
+      - id: check-toml
+      - id: check-xml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        args: ["--markdown-linebreak-ext=md,mdx"]
