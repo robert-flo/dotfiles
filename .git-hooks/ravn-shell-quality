@@ -1,0 +1,155 @@
+#!/usr/bin/env bash
+# ═══════════════════════════════════════════════════════════════
+# Shell Quality Gate — shfmt + shellcheck (RaVN-owned implementation)
+# ═══════════════════════════════════════════════════════════════
+# Invoked as a pre-commit local hook (id: ravn-shell-quality).
+# - staged shell only (*.sh or shell shebang)
+# - no transitional path exclusions
+# - partial-stage refusal (format must not expand the commit boundary)
+# - shfmt: auto-fix in place, re-stage when changed
+# - shellcheck: zero warnings; Shell Failure Report under worktree logs/
+#
+# Escape hatches (Quality Gate contract):
+#   Full Gate Bypass:      git commit --no-verify
+#   Selective Hook Skip:   SKIP=ravn-shell-quality git commit
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+PASS=1
+
+STAGED_FILES=()
+while IFS= read -r -d '' file; do
+  [[ ! -f $file ]] && continue
+
+  if [[ $file == *.sh ]]; then
+    STAGED_FILES+=("$file")
+  else
+    first_line=$(head -n 1 -- "$file" 2> /dev/null || true)
+    if [[ $first_line =~ ^#\!.*(bash|sh) ]]; then
+      STAGED_FILES+=("$file")
+    fi
+  fi
+done < <(git diff --name-only -z --cached --diff-filter=d 2> /dev/null || true)
+
+printf "\n\033[36m🔒 Shell Quality Gate\033[0m\n"
+printf "\033[36m────────────────────────────────────────────────────────────────────────────────\033[0m\n"
+
+if ((${#STAGED_FILES[@]} == 0)); then
+  printf "  \033[2m✓ no staged shell files to check\033[0m\n\n"
+  exit 0
+fi
+
+MISSING_TOOLS=()
+for tool in shfmt shellcheck; do
+  command -v "$tool" > /dev/null 2>&1 || MISSING_TOOLS+=("$tool")
+done
+
+if ((${#MISSING_TOOLS[@]} > 0)); then
+  printf "\033[31m  ✗ missing required tool(s):\033[0m %s\n\n" "${MISSING_TOOLS[*]}"
+  printf "  Install on Arch Linux, for example:\n"
+  printf "    sudo pacman -S shfmt shellcheck\n\n"
+  exit 1
+fi
+
+# Refuse partial stages when unstaged hunks are still visible (direct script
+# runs and any caller that does not stash). Under `pre-commit`, unstaged
+# changes are stashed before hooks, which already isolates the commit boundary
+# so format+re-stage cannot pull unrelated working-tree edits into the index.
+PARTIALLY_STAGED=()
+for file in "${STAGED_FILES[@]}"; do
+  git diff --quiet -- "$file" || PARTIALLY_STAGED+=("$file")
+done
+
+if ((${#PARTIALLY_STAGED[@]} > 0)); then
+  printf "\033[31m  ✗ partially staged shell file(s) detected:\033[0m\n"
+  printf "    - %s\n" "${PARTIALLY_STAGED[@]}"
+  printf "\n  Stage or discard their remaining changes before committing.\n\n"
+  exit 1
+fi
+
+# ── shfmt ───────────────────────────────────────────────────────
+printf "  shfmt format...              "
+
+RESTAGED=0
+for file in "${STAGED_FILES[@]}"; do
+  if ! SHFMT_OUT=$(shfmt -i 2 -sr -kp -ci -w -- "$file" 2>&1); then
+    printf "\033[31m✗ failed\033[0m\n"
+    printf "\n%s\n" "$SHFMT_OUT"
+    exit 1
+  fi
+
+  if ! git diff --quiet -- "$file"; then
+    git add -- "$file"
+    RESTAGED=$((RESTAGED + 1))
+  fi
+done
+
+if ((RESTAGED > 0)); then
+  printf "\033[33m✎ reformatted %d file(s) — re-staged\033[0m\n" "$RESTAGED"
+else
+  printf "\033[32m✓\033[0m\n"
+fi
+
+# ── shellcheck ──────────────────────────────────────────────────
+printf "  shellcheck lint...           "
+
+SHELLCHECK_OUT=""
+if SHELLCHECK_OUT=$(shellcheck -- "${STAGED_FILES[@]}" 2>&1); then
+  printf "\033[32m✓\033[0m\n"
+else
+  printf "\033[31m✗ warnings found\033[0m\n"
+  PASS=0
+fi
+
+if ((PASS == 0)); then
+  REPORT_DIR="${REPO_ROOT}/logs"
+  mkdir -p "$REPORT_DIR"
+  LOG_FILE="${REPORT_DIR}/shellcheck-report-$(date '+%Y%m%d-%H%M%S').log"
+
+  {
+    echo "═══════════════════════════════════════════════════════════════"
+    echo "  SHELL QUALITY REPORT — $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "  Repo: $(git remote get-url origin 2> /dev/null || echo 'local')"
+    echo "  Branch: $(git branch --show-current 2> /dev/null || echo 'unknown')"
+    echo "═══════════════════════════════════════════════════════════════"
+    echo ""
+    echo "──── Staged Files ──────────────────────────────────────────────"
+    for file in "${STAGED_FILES[@]}"; do
+      echo "  - $file"
+    done
+    echo ""
+    echo "──── Shellcheck Warnings ───────────────────────────────────────"
+    echo "$SHELLCHECK_OUT"
+    echo ""
+    echo "═══════════════════════════════════════════════════════════════"
+    echo "  AI PROMPT"
+    echo "═══════════════════════════════════════════════════════════════"
+    echo ""
+    echo "I have an Arch Linux-based shell utility dotfiles repository."
+    echo "The Shell Quality Gate found shellcheck warnings shown above. Please:"
+    echo ""
+    echo "1. Explain what each warning means in the context of bash development."
+    echo "2. Show the exact fix for each warning with a code snippet."
+    echo "3. Confirm if any warnings are safe to ignore/disable with inline comments"
+    echo "   (e.g., # shellcheck disable=SCxxxx)."
+    echo ""
+    echo "Files involved:"
+    for file in "${STAGED_FILES[@]}"; do
+      echo "  - $file"
+    done
+  } > "$LOG_FILE"
+
+  printf "\n\033[31m  ✗ commit blocked — shellcheck warnings must be resolved\033[0m\n"
+  printf "\n  \033[33m📋 Shell Failure Report:\033[0m\n"
+  printf "     \033[2m%s\033[0m\n" "$LOG_FILE"
+  printf "\n  \033[2mFix the warnings, then commit again.\033[0m\n"
+  printf "  \033[2mSelective skip (shell only): SKIP=ravn-shell-quality git commit\033[0m\n"
+  printf "  \033[2mFull Gate Bypass:            git commit --no-verify\033[0m\n\n"
+  exit 1
+fi
+
+printf "\n\033[32m  ✓ Shell Quality Gate passed\033[0m\n\n"
+exit 0
