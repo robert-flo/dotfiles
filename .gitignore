@@ -1,3 +1,6 @@
 # Local agent skills and runtime lockfile
 .agents/
 skills-lock.json
+
+# Shell Failure Reports from the Shell Quality Gate
+logs/
