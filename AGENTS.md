@@ -84,8 +84,8 @@ Always prioritize the helper functions imported from [global_fn.sh](Scripts/glob
 
 ## ShellCheck & Scripting Safety
 
-- **Zero-Warning Policy**: All new or modified shell scripts must pass `shellcheck` with zero warnings or errors before committing. The pre-commit hook (`shellcheck` + `shfmt`) will block the commit if any warnings are found. This rule is non-negotiable.
-  - **Exclusion list**: the list of files/paths excluded from the check lives only inside the pre-commit hook (`.git/hooks/pre-commit` or the source script that generates it) — that is the single source of truth. Do not duplicate this list here; if you need to know what's excluded, consult the hook directly.
+- **Zero-Warning Policy**: All new or modified shell scripts must pass `shellcheck` with zero warnings or errors before committing. The **Shell Quality Gate** (`shfmt` + `shellcheck` via the pre-commit Entrypoint) blocks the commit if any warnings are found. This rule is non-negotiable.
+- **No path exclusion allowlist**: every staged shell file (`*.sh` or shell shebang) is in scope. There is no transitional “legacy skip” list in the gate.
 - **Direct Command Checks (SC2181/SC2319)**: Avoid checking `$?` indirectly (e.g., `if [ $? -eq 0 ]`). Check commands directly (e.g., `if my_command; then`) or use success tracking variables (`success=0; my_command || success=1; if (( success == 0 )); then`).
 - **Quote Variable Expansions (SC2086)**: Always double-quote variable expansions when they are used as command arguments to prevent word splitting (e.g., `"$var"`), except inside `[[ ]]` where expansion is safe.
 - **Built-in Parameter Expansion (SC2001)**: Avoid calling external tools like `sed` or `awk` for simple string replacements on single variables; prefer built-in Bash parameter expansion (e.g., `${var//search/replace}`).
@@ -93,28 +93,56 @@ Always prioritize the helper functions imported from [global_fn.sh](Scripts/glob
 
 ## Verification
 
-### Automatic (pre-commit hook)
+### Quality Gate (automatic on commit)
 
-On every commit, the hook (`shfmt` + `shellcheck`) automatically runs only against **staged** files that are shell scripts:
+The **Quality Gate** is owned by the **pre-commit framework** as the sole Git **Entrypoint** (do not set a competing `core.hooksPath`). It runs three domains on commit:
 
-- **shfmt**: auto-fixes formatting in place and re-stages the changed files. Exact flags: `shfmt -i 2 -sr -kp -ci -w "$file"`.
-- **shellcheck**: blocks the commit if it finds warnings. On failure, it generates an AI-ready report in `logs/shellcheck-report-<timestamp>.log` with the warnings and a ready-to-use prompt for asking an agent to explain and fix each one.
-- **Escape hatch** (emergencies only): `SKIP_HOOKS=1 git commit` — skips both checks.
+| Domain | What it does |
+| --- | --- |
+| **File Hygiene Gate** | large files, merge conflict markers, symlinks, structured-file checks, trailing whitespace, EOF |
+| **Doc Quality Gate** | Strict Doc Profile via framework-managed `markdownlint-cli2` (not Docker) |
+| **Shell Quality Gate** | RaVN local hook `.git-hooks/ravn-shell-quality`: staged shell only, `shfmt` then `shellcheck` |
+
+Shell details:
+
+- **shfmt**: auto-fixes in place and re-stages. Flags: `shfmt -i 2 -sr -kp -ci -w`.
+- **shellcheck**: zero warnings. On failure, writes a **Shell Failure Report** at `logs/shellcheck-report-<timestamp>.log` in the current worktree (path is printed; `logs/` is gitignored).
+- Partial-stage shell files are refused when unstaged hunks are visible (direct script runs); under pre-commit, unstaged changes are stashed before hooks so format cannot expand the commit boundary.
+
+### Gate Bootstrap
+
+Activate or refresh the Entrypoint (verify tools on `PATH`, then `pre-commit install` — **does not** install OS packages):
+
+```bash
+make hooks-install
+```
+
+Required host tools: `pre-commit`, `shfmt`, `shellcheck`. On Arch, for example: `sudo pacman -S pre-commit shfmt shellcheck`.
+
+`make git-setup REPO=...` calls the **same** Gate Bootstrap after creating worktrees when the repo ships `make/hooks.mk` and `.pre-commit-config.yaml` (e.g. this dotfiles tree).
+
+### Escape hatches
+
+| Level | Mechanism | Effect |
+| --- | --- | --- |
+| **Full Gate Bypass** | `git commit --no-verify` | Skips the entire Quality Gate for that commit |
+| **Selective Hook Skip** | `SKIP=<hook-id>[,...]` | Skips only named hooks (e.g. `SKIP=ravn-shell-quality`) |
+
+Do **not** use `SKIP_HOOKS=1` — it is retired and is not part of the contract.
 
 ### Manual (full-repo audit)
 
-To review the entire repo (not just staged files), e.g. before a release:
+To review beyond staged-only commits, e.g. before a release:
 
 ```bash
-# ShellCheck across all scripts
-shellcheck Scripts/**/*.sh
+pre-commit run --all-files
 
-# shfmt: only shows the diff, does NOT modify files (unlike the hook)
+# Or shell-only manual audit (diff only for shfmt):
+shellcheck Scripts/**/*.sh
 shfmt -i 2 -sr -kp -ci -d Scripts/
 ```
 
-> Note: `shellcheck Scripts/**/*.sh` requires `shopt -s globstar` enabled in the bash session to expand recursively; otherwise it will only match one level of subdirectories.
-> Note: unlike the hook (which uses `-w` and auto-fixes), the manual command uses `-d` (diff only) — it doesn't modify anything, it just shows you what would change.
+Note: `shellcheck Scripts/**/*.sh` needs `shopt -s globstar` in bash for deep recursion. Unlike the gate (`shfmt -w`), the manual `shfmt -d` command does not modify files.
 
 ## Migrations
 
