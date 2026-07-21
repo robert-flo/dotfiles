@@ -15,6 +15,8 @@
 #
 # CI range mode:
 #   RAVN_SHELL_QUALITY_SCOPE=range RAVN_SHELL_QUALITY_BASE=<base> .git-hooks/ravn-shell-quality
+# Full-repository audit mode:
+#   RAVN_SHELL_QUALITY_SCOPE=all .git-hooks/ravn-shell-quality
 
 set -euo pipefail
 
@@ -37,6 +39,9 @@ case $QUALITY_SCOPE in
     fi
 
     FILE_COMMAND=(git diff --name-only -z --diff-filter=ACMRT "$QUALITY_BASE" HEAD)
+    ;;
+  all)
+    FILE_COMMAND=(git ls-files --cached --others --exclude-standard -z)
     ;;
   *)
     printf 'Unsupported Shell Quality Gate scope: %s\n' "$QUALITY_SCOPE" >&2
