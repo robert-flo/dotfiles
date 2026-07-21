@@ -7,45 +7,45 @@ Domain language for the RaVN Arch Linux utility/dotfiles repository — quality 
 ### Commit quality
 
 **Quality Gate**:
-The full set of automated checks that must pass before a commit is accepted. Owned by the `pre-commit` framework as the single Git entrypoint.
+The full set of automated checks that must pass before a commit is accepted, owned by a single Git entrypoint.
 _Avoid_: pre-commit hooks (ambiguous), linters, CI (CI may re-run the same gate but is not the gate itself)
 
 **Shell Quality Gate**:
-The shell-specific portion of the Quality Gate: format with `shfmt`, lint with `shellcheck`, plus RaVN-specific rules (staged-only selection, partial-stage refusal, AI-ready failure reports). Implemented as a `pre-commit` **local hook** that runs the RaVN-owned script under `.git-hooks/`; not replaced by third-party shfmt/shellcheck hooks. Failure reports are written under the worktree’s `logs/` directory (not git-common-dir). **No transitional path exclusions**: every staged shell file is in scope.
+The shell-specific portion of the Quality Gate: format, lint, and RaVN shell rules for staged shell files only.
 _Avoid_: shell hook, bash lint (when referring to the whole gate), community shell hooks (as the primary implementation), exclusion allowlists for “legacy” shell
 
 **Shell Failure Report**:
-A timestamped, AI-oriented log produced when the Shell Quality Gate fails shellcheck. Lives at `logs/shellcheck-report-<timestamp>.log` inside the current worktree; path is printed on failure for agents/humans to open.
-_Avoid_: hook-reports under git-common-dir (rejected for this repo’s preferred visibility)
+A timestamped, AI-oriented artifact produced when the Shell Quality Gate fails lint, with a path printed for humans and agents.
+_Avoid_: hidden side-channel reports outside the working tree
 
 **File Hygiene Gate**:
-The non-shell portion of the Quality Gate that checks generic repository hygiene (large files, merge conflict markers, broken symlinks, structured-file syntax, trailing whitespace, end-of-file newlines).
+The non-shell portion of the Quality Gate for generic repository hygiene (size, conflict markers, symlinks, structured-file validity, whitespace, EOF).
 _Avoid_: generic hooks, basic checks
 
 **Doc Quality Gate**:
-The Markdown portion of the Quality Gate. Runs via the pre-commit-managed `markdownlint-cli2` toolchain (not Docker on the commit path). Commit policy is the project **strict** markdownlint profile. Scope is first-party project documentation that Git can stage. Local agent skill trees under `.agents/` are outside the repository via `.gitignore`, so they are not part of the gate’s normal input set.
-_Avoid_: markdown hook (when referring to the whole doc policy), markdownlint-cli2-docker (as the commit-path implementation), linting third-party skills
+The Markdown portion of the Quality Gate for first-party project documentation that Git can stage.
+_Avoid_: markdown hook (when referring to the whole doc policy), linting third-party or local agent skills
 
 **Local Agent Tree**:
-Developer-local agent skills and related files under `.agents/` (and the local `skills-lock.json`), ignored by Git. Not product source; not an input to the Quality Gate unless force-added.
+Developer-local agent skills and related files, ignored by Git and outside product source.
 _Avoid_: project docs, tracked skills vendor directory
 
 **Strict Doc Profile**:
-The markdownlint rule set used by the Doc Quality Gate on commit. Stricter than a legacy-debt profile; may still disable a small set of rules required by intentional project conventions (e.g. HTML for badges). Canonical on-disk source: `.markdownlint.yaml` (single file; no parallel `.json` or `-strict` twin for commit policy).
-_Avoid_: full default markdownlint (implies zero disables), lax profile (not the commit gate), `.markdownlint-strict.yaml` as a second live commit config
+The stricter Markdown rule set used by the Doc Quality Gate on commit, with only intentional project-convention exceptions.
+_Avoid_: full default markdownlint (implies zero disables), lax profile (not the commit gate)
 
 **Entrypoint**:
-The single Git `pre-commit` hook installed by the `pre-commit` framework. All Quality Gate domains run under this entrypoint; there is no second parallel Git hook owner.
+The single Git pre-commit hook installation that owns the Quality Gate; no second parallel hook owner.
 _Avoid_: hooksPath dual setup, dual pre-commit systems
 
 **Gate Bootstrap**:
-The explicit install path that activates the Entrypoint in a clone or worktree (canonical Make target, also invoked from `git-setup` / worktree creation). Verifies that required host tools (`pre-commit`, `shfmt`, `shellcheck`) are on `PATH` and fails with install hints if not; does not install system packages itself.
-_Avoid_: “just run pre-commit install” as the only onboarding story, auto-pacman/pip from the bootstrap target
+The explicit install path that activates the Entrypoint in a clone or worktree and verifies required host tools without installing packages.
+_Avoid_: “just run pre-commit install” as the only onboarding story, auto-install of system packages from bootstrap
 
 **Full Gate Bypass**:
-Emergency skip of the entire Quality Gate for one commit. Canonical mechanism: `git commit --no-verify` (Git-native).
-_Avoid_: SKIP_HOOKS=1 (retired; previously implied “all hooks” but only affected the shell script)
+Emergency skip of the entire Quality Gate for one commit via Git’s native no-verify path.
+_Avoid_: SKIP_HOOKS=1 (retired; previously implied “all hooks” but only affected shell)
 
 **Selective Hook Skip**:
-Skipping one or more named hooks inside the Quality Gate while leaving the rest active. Canonical mechanism: pre-commit’s `SKIP=<hook-id>[,<hook-id>…]` (e.g. `SKIP=ravn-shell-quality`).
+Skipping one or more named hooks inside the Quality Gate while leaving the rest active.
 _Avoid_: SKIP_HOOKS (ambiguous), partial bypass
