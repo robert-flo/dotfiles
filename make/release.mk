@@ -55,6 +55,14 @@ release-status: ## Show pending Release Please pull requests and recent GitHub r
 		printf "$(RED)authenticate GitHub CLI first: gh auth login$(NC)\n"; \
 		exit 1; \
 	fi; \
+	secret_names=""; \
+	if ! secret_names=$$(gh secret list --json name --jq '.[].name'); then \
+		printf "$(YELLOW)Unable to inspect RELEASE_PLEASE_TOKEN; verify maintainer configuration in GitHub.$(NC)\n"; \
+	elif [[ $$secret_names == *"RELEASE_PLEASE_TOKEN"* ]]; then \
+		printf "$(GREEN)RELEASE_PLEASE_TOKEN is configured for Release Please.$(NC)\n"; \
+	else \
+		printf "$(YELLOW)RELEASE_PLEASE_TOKEN is missing; Release Please cannot trigger normal PR CI.$(NC)\n"; \
+	fi; \
 	printf "$(CYAN)Pending Release Please pull requests$(NC)\n"; \
 	gh pr list --base master --state open --label 'autorelease: pending'; \
 	printf "\n$(CYAN)Recent GitHub releases$(NC)\n"; \
