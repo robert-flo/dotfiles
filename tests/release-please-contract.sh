@@ -44,6 +44,7 @@ assert_contains() {
 main() {
   local changelog_first_line=""
   local help_output=""
+  local version=""
   local dollar='$'
 
   assert_file_exists "$RELEASE_CONFIG"
@@ -53,14 +54,13 @@ main() {
   assert_file_exists "$MARKDOWNLINT_CONFIG"
   assert_file_exists "$CHANGELOG_FILE"
 
-  if [[ $(< "$VERSION_FILE") != "0.1.0" ]]; then
-    printf 'version.txt must establish version 0.1.0.\n' >&2
+  version=$(< "$VERSION_FILE")
+  if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    printf 'version.txt must contain an X.Y.Z version.\n' >&2
     exit 1
   fi
 
-  jq --exit-status '
-    .["."] == "0.1.0"
-  ' "$RELEASE_MANIFEST" > /dev/null
+  jq --exit-status --arg version "$version" '.["."] == $version' "$RELEASE_MANIFEST" > /dev/null
   jq --exit-status '
     .["release-type"] == "simple" and
     .["include-v-in-tag"] == true and
