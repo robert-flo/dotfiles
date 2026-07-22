@@ -57,10 +57,11 @@ PROTECTED_BRANCHES ?= master dev rc imgbot
 GIT_PROTECTION_REQUIRED_APPROVALS ?= 0
 CONFIGURE_REMOTE ?= 0
 GIT_REPLACE_PROTECTION ?= 0
+GH ?= gh
 
 .PHONY: help-git git-add git-commit git-cm git-add-commit git-push git-pull git-status git-diff git-log git-setup git-sync git-diff-dev git-diff-rc git-diff-here \
         git-add-fuzzy git-amend git-clean git-prune-branches git-diff-fuzzy git-search git-protect-default-branch \
-        git-configure-release-labels repository-bootstrap
+        git-configure-release-labels repository-bootstrap repository-protection-status
 
 # ═══════════════════════════════════════════════════════════════
 # 🔀 HELP-GIT - Show Git operations
@@ -88,6 +89,8 @@ help-git: ## Show Git operation targets
 	@printf "  make git-diff-here        Compare the worktree with the base branch\n"
 	@printf "  make git-protect-default-branch\n"
 	@printf "                            Require PRs and successful CI before updating the default branch\n"
+	@printf "  make repository-protection-status\n"
+	@printf "                            Audit the default-branch policy without changing GitHub\n"
 	@printf "  make repository-bootstrap Install the local Quality Gate\n"
 	@printf "  make repository-bootstrap CONFIGURE_REMOTE=1\n"
 	@printf "                            Also synchronize release labels and protect the default branch\n"
@@ -97,8 +100,69 @@ help-git: ## Show Git operation targets
 	@printf "\n$(YELLOW)📋 Quick Actions:$(NC)\n"
 	@printf "$(DIM)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
 	@printf "  • inspect repository state: $(BLUE)make git-status$(NC)\n"
+	@printf "  • audit GitHub protection: $(BLUE)make repository-protection-status$(NC)\n"
 	@printf "  • stage all changes: $(BLUE)make git-add$(NC)\n"
 	@printf "  • commit staged changes: $(BLUE)make git-commit$(NC)\n\n"
+
+# ═══════════════════════════════════════════════════════════════
+# 🛡️  REPOSITORY-PROTECTION-STATUS - Audit GitHub branch protection
+# ═══════════════════════════════════════════════════════════════
+# ──── Audit: Reads the default-branch policy without changing GitHub. ────
+repository-protection-status: ## Audit default-branch protection without changing GitHub
+	@printf "\n$(CYAN)🛡️  repository-protection-status · auditing default-branch protection$(NC)\n"
+	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
+	@set -euo pipefail; \
+	if ! command -v "$(GH)" > /dev/null 2>&1; then \
+		printf "$(RED)  ✗ GitHub CLI (gh) is required$(NC)\n"; \
+		exit 1; \
+	fi; \
+	if ! "$(GH)" auth status > /dev/null 2>&1; then \
+		printf "$(RED)  ✗ authenticate GitHub CLI first: gh auth login$(NC)\n"; \
+		exit 1; \
+	fi; \
+	if ! command -v jq > /dev/null 2>&1; then \
+		printf "$(RED)  ✗ jq is required for repository-protection-status$(NC)\n"; \
+		exit 1; \
+	fi; \
+	REPOSITORY=$$("$(GH)" repo view --json nameWithOwner --jq '.nameWithOwner') || exit 1; \
+	DEFAULT_BRANCH=$$("$(GH)" repo view --json defaultBranchRef --jq '.defaultBranchRef.name') || exit 1; \
+	if [[ -z $$REPOSITORY || -z $$DEFAULT_BRANCH || $$REPOSITORY == "null" || $$DEFAULT_BRANCH == "null" ]]; then \
+		printf "$(RED)  ✗ could not resolve a GitHub repository and default branch$(NC)\n"; \
+		exit 1; \
+	fi; \
+	PROTECTION=""; \
+	if ! PROTECTION=$$("$(GH)" api "repos/$$REPOSITORY/branches/$$DEFAULT_BRANCH/protection" 2> /dev/null); then \
+		printf "$(RED)  ✗ unable to read branch protection; repository administration access may be required$(NC)\n"; \
+		exit 1; \
+	fi; \
+	printf "  $(DIM)repository:$(NC) $$REPOSITORY\n"; \
+	printf "  $(DIM)branch:$(NC)     $$DEFAULT_BRANCH\n"; \
+	printf "  $(DIM)approvals:$(NC)  $(GIT_PROTECTION_REQUIRED_APPROVALS)\n"; \
+	status=0; \
+	check_policy() { \
+		local label="$$1"; \
+		local filter="$$2"; \
+		if printf '%s' "$$PROTECTION" | jq --exit-status "$$filter" > /dev/null; then \
+			printf "$(GREEN)  ✓ %s$(NC)\n" "$$label"; \
+		else \
+			printf "$(RED)  ✗ %s$(NC)\n" "$$label"; \
+			status=1; \
+		fi; \
+	}; \
+	check_policy "pull requests are required" '.required_pull_request_reviews != null'; \
+	check_policy "required approvals match the template" '.required_pull_request_reviews.required_approving_review_count == $(GIT_PROTECTION_REQUIRED_APPROVALS)'; \
+	check_policy "required CI checks match the template" '.required_status_checks.strict == true and (.required_status_checks.contexts | sort) == ["Run Pre-Commit Hooks", "Validate changed shell scripts"]'; \
+	check_policy "administrators cannot bypass protection" '.enforce_admins.enabled == true'; \
+	check_policy "pull-request review settings match the template" '.required_pull_request_reviews.dismiss_stale_reviews == false and .required_pull_request_reviews.require_code_owner_reviews == false and .required_pull_request_reviews.require_last_push_approval == false'; \
+	check_policy "conversations must be resolved" '.required_conversation_resolution.enabled == true'; \
+	check_policy "force pushes are blocked" '.allow_force_pushes.enabled == false'; \
+	check_policy "branch deletion is blocked" '.allow_deletions.enabled == false'; \
+	check_policy "branch restrictions match the template" '.restrictions == null and .required_linear_history.enabled == false and .block_creations.enabled == false and .lock_branch.enabled == false and .allow_fork_syncing.enabled == false'; \
+	if ((status)); then \
+		printf "\n$(RED)  ✗ branch protection differs from the template policy$(NC)\n\n"; \
+		exit 1; \
+	fi; \
+	printf "\n$(GREEN)  ✓ branch protection matches the template policy$(NC)\n\n"
 
 # ═══════════════════════════════════════════════════════════════
 # 🛡️  GIT-PROTECT-DEFAULT-BRANCH - Require pull requests on GitHub
