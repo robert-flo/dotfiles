@@ -90,6 +90,7 @@ packaging artifacts.
 
 - [Contributing](CONTRIBUTING.md)
 - [Make command reference](docs/make/)
+- [Repository map](docs/repository-map.md)
 - [Commit message guidelines](COMMIT_MESSAGE_GUIDELINES.md)
 - [Release policy](RELEASE_POLICY.md)
 - [Editor recommendations](.vscode/extensions.json)
