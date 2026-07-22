@@ -15,5 +15,8 @@ MD045: false
 # Long lines are common in image links and localized/doc tables.
 MD013: false
 
+# Release Please intentionally separates its generated release heading and sections.
+MD012: false
+
 # Multiple H1 headings appear in some intentional doc layouts.
 MD025: false

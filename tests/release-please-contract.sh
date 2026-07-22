@@ -11,8 +11,6 @@ readonly RELEASE_WORKFLOW="$REPO_ROOT/.github/workflows/release-please.yml"
 readonly VERSION_FILE="$REPO_ROOT/version.txt"
 readonly GIT_MAKEFILE="$REPO_ROOT/make/git.mk"
 readonly MARKDOWNLINT_CONFIG="$REPO_ROOT/.markdownlint.yaml"
-readonly RELEASE_MARKDOWNLINT_CONFIG="$REPO_ROOT/release-please.markdownlint.yaml"
-readonly PRE_COMMIT_CONFIG="$REPO_ROOT/.pre-commit-config.yaml"
 readonly CHANGELOG_FILE="$REPO_ROOT/CHANGELOG.md"
 
 assert_file_exists() {
@@ -53,8 +51,6 @@ main() {
   assert_file_exists "$RELEASE_WORKFLOW"
   assert_file_exists "$VERSION_FILE"
   assert_file_exists "$MARKDOWNLINT_CONFIG"
-  assert_file_exists "$RELEASE_MARKDOWNLINT_CONFIG"
-  assert_file_exists "$PRE_COMMIT_CONFIG"
   assert_file_exists "$CHANGELOG_FILE"
 
   if [[ $(< "$VERSION_FILE") != "0.1.0" ]]; then
@@ -79,9 +75,7 @@ main() {
   assert_contains 'RELEASE_PLEASE_TOKEN' "$RELEASE_WORKFLOW"
   assert_contains 'autorelease: pending' "$RELEASE_CONFIG"
   assert_contains 'autorelease: tagged' "$RELEASE_CONFIG"
-  assert_contains 'MD012: false' "$RELEASE_MARKDOWNLINT_CONFIG"
-  assert_contains 'markdownlint-release-please' "$PRE_COMMIT_CONFIG"
-  assert_contains 'CHANGELOG.md' "$PRE_COMMIT_CONFIG"
+  assert_contains 'MD012: false' "$MARKDOWNLINT_CONFIG"
   assert_contains 'git-configure-release-labels' "$GIT_MAKEFILE"
   assert_contains '"required_conversation_resolution":true' "$GIT_MAKEFILE"
   assert_contains "\"required_approving_review_count\":${dollar}(GIT_PROTECTION_REQUIRED_APPROVALS)" "$GIT_MAKEFILE"
