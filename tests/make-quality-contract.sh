@@ -41,7 +41,7 @@ run_non_mutating_target() {
     exit 1
   fi
 
-  make -C "$worktree" "$target" TEST_EXCLUDE="$SELF_TEST"
+  make -C "$worktree" "$target" TEST_EXCLUDE="$SELF_TEST ${TEST_EXCLUDE:-}"
   after=$(git -C "$worktree" status --porcelain)
 
   if [[ -n $after ]]; then
