@@ -61,22 +61,16 @@ body:
     attributes:
       label: Environment
       description: |
-        Please run this command to save your system information to a file:
+        Include the command, shell version, operating system, and relevant tool versions.
         ```bash
-        hyprctl systeminfo -c > /tmp/hyprland_systeminfo.txt
+        bash --version
+        shellcheck --version
         ```
-        Then copy the contents and paste them in the collapsible section below.
-
-        Also include these additional details:
-        - Installation Environment: [e.g., On The Main Hardware, On A Virtual Machine]
-        - Display Resolution: [e.g., 1920x1080]
-        - Graphics Driver: [e.g., nvidia, intel, amd]
-        - Display Server: [e.g., Wayland, X11]
       placeholder: |
         <details>
-        <summary>System Information (Click to expand)</summary>
+        <summary>Environment information</summary>
         ```
-        [Paste the entire output of hyprctl systeminfo -c here]
+        [Paste relevant command output here]
         ```
         </details>
     validations:

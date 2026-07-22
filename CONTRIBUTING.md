@@ -1,7 +1,7 @@
-# Contributing to RaVN Dotfiles
+# Contributing to this Bash project
 
-Thank you for improving RaVN Dotfiles. Bug fixes, configuration improvements,
-documentation, and tests are all welcome.
+Thank you for improving this Bash project. Bug fixes, scripts, documentation,
+and tests are all welcome.
 
 ## Getting started
 
@@ -21,7 +21,7 @@ documentation, and tests are all welcome.
 3. Create a focused topic branch in an isolated worktree:
 
    ```bash
-   git-create-worktree -b type/short-description /wt/dotfiles/short-description
+   git-create-worktree -b type/short-description /wt/<repo>/short-description
    ```
 
 4. Before opening a pull request, run the relevant checks:
