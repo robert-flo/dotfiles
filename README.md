@@ -89,6 +89,7 @@ packaging artifacts.
 ## Documentation
 
 - [Contributing](CONTRIBUTING.md)
+- [Make command reference](docs/make/)
 - [Commit message guidelines](COMMIT_MESSAGE_GUIDELINES.md)
 - [Release policy](RELEASE_POLICY.md)
 - [Editor recommendations](.vscode/extensions.json)
