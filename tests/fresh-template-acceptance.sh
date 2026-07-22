@@ -80,7 +80,10 @@ verify_release_contract() {
   assert_contains 'contents: write' "$RELEASE_WORKFLOW"
   assert_contains 'issues: write' "$RELEASE_WORKFLOW"
   assert_contains 'pull-requests: write' "$RELEASE_WORKFLOW"
-  assert_contains '".": "0.1.0"' "$RELEASE_MANIFEST"
+  if ! jq --exit-status --arg version "$version" '.["."] == $version' "$RELEASE_MANIFEST" > /dev/null; then
+    printf 'Release manifest must match version.txt in the fresh template fixture.\n' >&2
+    exit 1
+  fi
 }
 
 verify_bootstrap_contract() {
