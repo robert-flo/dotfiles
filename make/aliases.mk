@@ -2,17 +2,23 @@
 # 📎 COMPATIBILITY ALIASES
 # ═══════════════════════════════════════════════════════════════
 # 🎯 Purpose: Short redirects for the Git and Docker targets
+#
+# 📎 Aliases delegate to their canonical target so their behavior and terminal
+#    language stay centralized in make/git.mk and make/docker.mk.
 
 .PHONY: help-aliases \
         git-a git-c git-ac git-p git-st git-s git-d git-l git-lg \
         git-af git-fuck git-bye git-df git-fc git-fm \
         a c ac p l st s d lg af fuck bye clean df fc fm cm db dr dt dc
 
+# ═══════════════════════════════════════════════════════════════
+# 📎 HELP-ALIASES - Show compatibility aliases for Git targets
+# ═══════════════════════════════════════════════════════════════
+# ──── Help: Maps historical shorthand names to their canonical targets. ────
 help-aliases: ## Show Git compatibility aliases
 	@printf "\n"
-	@printf "$(CYAN)═════════════════════════════════════════════════════════════════════════════════\n$(NC)"
-	@printf "$(CYAN)  📎 Compatibility Aliases\n$(NC)"
-	@printf "$(CYAN)═════════════════════════════════════════════════════════════════════════════════\n$(NC)"
+	@printf "$(CYAN)📎 Compatibility aliases$(NC)\n"
+	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
 	@printf "\n"
 	@printf "$(BLUE)%-20s %-25s %s$(NC)\n" "ALIAS" "TARGET" "DESCRIPTION"
 	@printf "$(CYAN)%-20s %-25s %s$(NC)\n" "-----" "------" "-----------"
@@ -35,9 +41,16 @@ help-aliases: ## Show Git compatibility aliases
 	@printf "%-20s %-25s %s\n" "dr" "docker-run" "Run the local Docker image"
 	@printf "%-20s %-25s %s\n" "dt" "docker-test" "Verify the local Docker image output"
 	@printf "%-20s %-25s %s\n" "dc" "docker-clean" "Remove the local Docker image"
-	@printf "\n"
+	@printf "\n$(GREEN)  ✓ done$(NC)\n"
+	@printf "\n$(YELLOW)📋 Quick Actions:$(NC)\n"
+	@printf "$(DIM)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
+	@printf "  • inspect canonical commands: $(BLUE)make help-git$(NC)\n"
+	@printf "  • inspect Docker commands: $(BLUE)make help-docker$(NC)\n\n"
 
-# === Git Operations (git-) ===
+# ═══════════════════════════════════════════════════════════════
+# 📎 GIT COMPATIBILITY ALIASES - Delegate to canonical Git targets
+# ═══════════════════════════════════════════════════════════════
+# ──── Aliases: Preserve short commands without duplicating behavior. ────
 git-a: git-add
 git-c: git-commit
 git-ac: git-add-commit
@@ -54,7 +67,10 @@ git-df: git-diff-fuzzy
 git-fc: git-search
 git-fm: git-search
 
-# === Short Git Aliases ===
+# ═══════════════════════════════════════════════════════════════
+# 📎 SHORT GIT ALIASES - Delegate to canonical Git targets
+# ═══════════════════════════════════════════════════════════════
+# ──── Aliases: Provide concise interactive shortcuts. ────
 a: git-add
 c: git-commit
 cm: git-cm
@@ -73,7 +89,10 @@ df: git-diff-fuzzy
 fc: git-search
 fm: git-search
 
-# Short Docker aliases
+# ═══════════════════════════════════════════════════════════════
+# 📎 DOCKER ALIASES - Delegate to canonical Docker targets
+# ═══════════════════════════════════════════════════════════════
+# ──── Aliases: Keep Docker shortcuts aligned with their canonical output. ────
 db: docker-build
 dr: docker-run
 dt: docker-test

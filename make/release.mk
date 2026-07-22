@@ -1,6 +1,11 @@
 # ═══════════════════════════════════════════════════════════════
 # 🚀 RELEASE — Release Please readiness and diagnostics
 # ═══════════════════════════════════════════════════════════════
+# 🎯 Purpose: Inspect local Release Please readiness without mutating releases.
+#
+# 📎 Targets:
+#    release-check   Validate checked-in release configuration.
+#    release-status  Inspect pending release work and maintainer diagnostics.
 
 RELEASE_CONFIG := release-please-config.json
 RELEASE_MANIFEST := .release-please-manifest.json
@@ -8,15 +13,30 @@ RELEASE_VERSION_FILE := version.txt
 
 .PHONY: help-release release-check release-status
 
+# ═══════════════════════════════════════════════════════════════
+# 🚀 HELP-RELEASE - Show the Release Please target catalog
+# ═══════════════════════════════════════════════════════════════
+# ──── Help: Lists non-mutating release readiness and status checks. ────
 help-release: ## Show Release Please diagnostic targets
 	@printf "\n"
-	@printf "$(CYAN)Release Please targets$(NC)\n"
+	@printf "$(CYAN)🚀 Release Please targets$(NC)\n"
 	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
 	@printf "  make release-check         Validate local Release Please configuration\n"
 	@printf "  make release-status        Show pending Release Please PRs and recent releases\n"
 	@printf "\nRelease Please owns versions, CHANGELOG.md, vX.Y.Z tags, and GitHub Releases.\n"
+	@printf "\n$(GREEN)  ✓ done$(NC)\n"
+	@printf "\n$(YELLOW)📋 Quick Actions:$(NC)\n"
+	@printf "$(DIM)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
+	@printf "  • validate configuration: $(BLUE)make release-check$(NC)\n"
+	@printf "  • inspect release status: $(BLUE)make release-status$(NC)\n\n"
 
+# ═══════════════════════════════════════════════════════════════
+# 🚀 RELEASE-CHECK - Validate local Release Please configuration
+# ═══════════════════════════════════════════════════════════════
+# ──── Verify: Reads checked-in release state without changing it. ────
 release-check: ## Validate local Release Please configuration without changing release state
+	@printf "\n$(CYAN)🚀 release-check · validating local release configuration$(NC)\n"
+	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
 	@set -euo pipefail; \
 	if ! command -v jq > /dev/null 2>&1; then \
 		printf "$(RED)jq is required for release-check$(NC)\n"; \
@@ -43,9 +63,16 @@ release-check: ## Validate local Release Please configuration without changing r
 		printf "$(RED)Release Please configuration does not match the template contract$(NC)\n"; \
 		exit 1; \
 	fi; \
-	printf "$(GREEN)Release Please is ready at v%s$(NC)\n" "$$version"
+	printf "$(GREEN)  ✓ Release Please is ready at v%s$(NC)\n" "$$version"
+	@printf "$(YELLOW)📋 Quick Actions:$(NC) $(BLUE)make release-status$(NC) to inspect GitHub state\n\n"
 
+# ═══════════════════════════════════════════════════════════════
+# 🚀 RELEASE-STATUS - Inspect release workflow state
+# ═══════════════════════════════════════════════════════════════
+# ──── Inspect: Shows public lifecycle state and token availability only. ────
 release-status: ## Show pending Release Please pull requests and recent GitHub releases
+	@printf "\n$(CYAN)🚀 release-status · inspecting release workflow$(NC)\n"
+	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
 	@set -euo pipefail; \
 	if ! command -v gh > /dev/null 2>&1; then \
 		printf "$(RED)GitHub CLI (gh) is required$(NC)\n"; \
@@ -67,3 +94,5 @@ release-status: ## Show pending Release Please pull requests and recent GitHub r
 	gh pr list --base master --state open --label 'autorelease: pending'; \
 	printf "\n$(CYAN)Recent GitHub releases$(NC)\n"; \
 	gh release list --limit 5
+	@printf "\n$(GREEN)  ✓ release workflow inspected$(NC)\n"
+	@printf "$(YELLOW)📋 Quick Actions:$(NC) $(BLUE)make release-check$(NC) to validate local configuration\n\n"
