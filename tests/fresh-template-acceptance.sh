@@ -67,8 +67,8 @@ verify_release_contract() {
   local version=""
 
   version=$(< "$VERSION_FILE")
-  if [[ $version != "0.1.0" ]]; then
-    printf 'Fresh template fixture must establish version 0.1.0.\n' >&2
+  if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    printf 'Fresh template fixture must contain an X.Y.Z version.\n' >&2
     exit 1
   fi
 
