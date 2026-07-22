@@ -73,6 +73,14 @@ main() {
 
   assert_contains 'googleapis/release-please-action@v4' "$RELEASE_WORKFLOW"
   assert_contains 'RELEASE_PLEASE_TOKEN' "$RELEASE_WORKFLOW"
+  assert_contains 'steps.release.outputs.release_created' "$RELEASE_WORKFLOW"
+  assert_contains 'actions/checkout@v4' "$RELEASE_WORKFLOW"
+  assert_contains 'git archive --format=tar' "$RELEASE_WORKFLOW"
+  assert_contains 'gzip -n' "$RELEASE_WORKFLOW"
+  # shellcheck disable=SC2016 # The workflow command must retain its literal variable.
+  assert_contains 'sha256sum "$archive_name"' "$RELEASE_WORKFLOW"
+  # shellcheck disable=SC2016 # The workflow command must retain its literal variables.
+  assert_contains 'gh release upload "$RELEASE_TAG" "$archive_name" "${archive_name}.sha256" --clobber' "$RELEASE_WORKFLOW"
   assert_contains 'autorelease: pending' "$RELEASE_CONFIG"
   assert_contains 'autorelease: tagged' "$RELEASE_CONFIG"
   # shellcheck disable=SC2016 # Release Please placeholders must remain literal.
