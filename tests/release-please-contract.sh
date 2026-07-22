@@ -88,10 +88,13 @@ main() {
   fi
 
   changelog_first_line=$(head -n 1 "$CHANGELOG_FILE")
-  if [[ $changelog_first_line != '<!-- Release Please maintains this file. -->' ]]; then
-    printf 'CHANGELOG.md must not seed a heading that Release Please duplicates.\n' >&2
-    exit 1
-  fi
+  case "$changelog_first_line" in
+    '<!-- Release Please maintains this file. -->' | '# Changelog') ;;
+    *)
+      printf 'CHANGELOG.md must be in the initial or Release Please-managed format.\n' >&2
+      exit 1
+      ;;
+  esac
 
   assert_file_missing "$REPO_ROOT/.github/workflows/update-pr-changelog.yml"
   assert_file_missing "$REPO_ROOT/.github/scripts/update-pr-changelog.sh"
