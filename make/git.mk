@@ -67,7 +67,7 @@ GIT_REPLACE_PROTECTION ?= 0
 # ═══════════════════════════════════════════════════════════════
 help-git: ## Show Git operation targets
 	@printf "\n"
-	@printf "$(CYAN)Git operation targets$(NC)\n"
+	@printf "$(CYAN)🔀 Git targets$(NC)\n"
 	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
 	@printf "  make git-add              Stage all changes\n"
 	@printf "  make git-commit           Stage and create a timestamped commit\n"
@@ -93,6 +93,12 @@ help-git: ## Show Git operation targets
 	@printf "                            Also synchronize release labels and protect the default branch\n"
 	@printf "\nRun make help-aliases for compatibility aliases. Set DRY_RUN=1 to preview mutating targets.\n"
 	@printf "Run $(BLUE)make repository-bootstrap$(NC) after cloning. Maintainers add $(BLUE)CONFIGURE_REMOTE=1$(NC).\n"
+	@printf "\n$(GREEN)  ✓ done$(NC)\n"
+	@printf "\n$(YELLOW)📋 Quick Actions:$(NC)\n"
+	@printf "$(DIM)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
+	@printf "  • inspect repository state: $(BLUE)make git-status$(NC)\n"
+	@printf "  • stage all changes: $(BLUE)make git-add$(NC)\n"
+	@printf "  • commit staged changes: $(BLUE)make git-commit$(NC)\n\n"
 
 # ═══════════════════════════════════════════════════════════════
 # 🛡️  GIT-PROTECT-DEFAULT-BRANCH - Require pull requests on GitHub
@@ -100,6 +106,8 @@ help-git: ## Show Git operation targets
 # ──── Protection: Resolves the current GitHub repo and its default branch ────
 # ──── Usage: make git-protect-default-branch [GIT_PROTECTION_REQUIRED_APPROVALS=1] ────
 git-protect-default-branch: ## Require PRs and successful CI before updating the GitHub default branch
+	@printf "\n$(CYAN)🛡️  git-protect-default-branch · protecting the default branch$(NC)\n"
+	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
 	@set -eu; \
 	if [ "$(GIT_REPLACE_PROTECTION)" != "1" ]; then \
 		printf "$(YELLOW)  ⚠  refusing to replace branch protection without GIT_REPLACE_PROTECTION=1$(NC)\n"; \
@@ -140,7 +148,10 @@ git-protect-default-branch: ## Require PRs and successful CI before updating the
 # ═══════════════════════════════════════════════════════════════
 # 🏷️  GIT-CONFIGURE-RELEASE-LABELS - Synchronize Release Please labels
 # ═══════════════════════════════════════════════════════════════
+# ──── Configure: Creates the lifecycle labels required by Release Please. ────
 git-configure-release-labels: ## Create or update the Release Please lifecycle labels in GitHub
+	@printf "\n$(CYAN)🏷️  git-configure-release-labels · synchronizing lifecycle labels$(NC)\n"
+	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
 	@set -eu; \
 	if ! command -v gh > /dev/null 2>&1; then \
 		printf "$(RED)  ✗ GitHub CLI (gh) is required$(NC)\n"; \
@@ -161,7 +172,10 @@ git-configure-release-labels: ## Create or update the Release Please lifecycle l
 # ═══════════════════════════════════════════════════════════════
 # 🚀 REPOSITORY-BOOTSTRAP - Configure a local clone and GitHub repository
 # ═══════════════════════════════════════════════════════════════
+# ──── Bootstrap: Installs local hooks and optionally configures GitHub. ────
 repository-bootstrap: ## Install local hooks; set CONFIGURE_REMOTE=1 for maintainer GitHub setup
+	@printf "\n$(CYAN)🚀 repository-bootstrap · configuring this repository$(NC)\n"
+	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
 	@$(MAKE) -s hooks-install
 	@if [ "$(CONFIGURE_REMOTE)" = "1" ]; then \
 		$(MAKE) -s git-configure-release-labels; \
@@ -829,6 +843,10 @@ ifndef EMBEDDED
 	@printf "  • review again: $(BLUE)make git-clean$(NC)\n\n"
 endif
 
+# ═══════════════════════════════════════════════════════════════
+# 🧹 GIT-PRUNE-BRANCHES - Compatibility redirect to merged-worktree cleanup
+# ═══════════════════════════════════════════════════════════════
+# ──── Alias: Delegates to git-clean so output and safety checks stay centralized. ────
 git-prune-branches: git-clean
 
 # ═══════════════════════════════════════════════════════════════
