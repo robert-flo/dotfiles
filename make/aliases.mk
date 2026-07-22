@@ -3,8 +3,9 @@
 # ═══════════════════════════════════════════════════════════════
 # 🎯 Purpose: Short redirects for the Git and Docker targets
 #
-# 📎 Aliases delegate to their canonical target so their behavior and terminal
-#    language stay centralized in make/git.mk and make/docker.mk.
+# 📎 Aliases intentionally do not print their own target banners: they only
+#    delegate to canonical targets, which own the behavior and terminal
+#    language in make/git.mk and make/docker.mk.
 
 .PHONY: help-aliases \
         git-a git-c git-ac git-p git-st git-s git-d git-l git-lg \

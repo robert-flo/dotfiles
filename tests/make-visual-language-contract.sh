@@ -59,7 +59,10 @@ main() {
   assert_file_contains "$REPO_ROOT/make/git.mk" '# ──── Configure:'
   assert_file_contains "$REPO_ROOT/make/git.mk" '# ──── Bootstrap:'
   assert_file_contains "$REPO_ROOT/make/git.mk" '# 🧹 GIT-PRUNE-BRANCHES -'
-  assert_file_contains "$REPO_ROOT/make/aliases.mk" 'language stay centralized'
+  assert_file_contains "$REPO_ROOT/make/git.mk" 'git-protect-default-branch · protecting'
+  assert_file_contains "$REPO_ROOT/make/git.mk" 'git-configure-release-labels · synchronizing'
+  assert_file_contains "$REPO_ROOT/make/git.mk" 'repository-bootstrap · configuring'
+  assert_file_contains "$REPO_ROOT/make/aliases.mk" 'Aliases intentionally do not print'
 
   printf 'Make visual language contract tests passed.\n'
 }

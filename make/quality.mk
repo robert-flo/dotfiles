@@ -113,10 +113,8 @@ test: ## Run repository behavior tests without modifying files
 # ✅ VERIFY - Run the aggregate non-mutating acceptance contract
 # ═══════════════════════════════════════════════════════════════
 # ──── Verify: Combines lint and test under one memorable command. ────
-verify: ## Run all non-mutating local quality checks
-	@printf "\n$(CYAN)✅ verify · running full local acceptance$(NC)\n"
+verify: lint test ## Run all non-mutating local quality checks
+	@printf "\n$(CYAN)✅ verify · full local acceptance complete$(NC)\n"
 	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
-	@$(MAKE) --no-print-directory lint
-	@$(MAKE) --no-print-directory test
-	@printf "\n$(GREEN)  ✓ full local acceptance passed$(NC)\n"
+	@printf "$(GREEN)  ✓ full local acceptance passed$(NC)\n"
 	@printf "$(YELLOW)📋 Quick Actions:$(NC) $(BLUE)make format$(NC) to apply formatting when needed\n\n"

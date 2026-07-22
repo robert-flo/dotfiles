@@ -106,6 +106,8 @@ help-git: ## Show Git operation targets
 # ──── Protection: Resolves the current GitHub repo and its default branch ────
 # ──── Usage: make git-protect-default-branch [GIT_PROTECTION_REQUIRED_APPROVALS=1] ────
 git-protect-default-branch: ## Require PRs and successful CI before updating the GitHub default branch
+	@printf "\n$(CYAN)🛡️  git-protect-default-branch · protecting the default branch$(NC)\n"
+	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
 	@set -eu; \
 	if [ "$(GIT_REPLACE_PROTECTION)" != "1" ]; then \
 		printf "$(YELLOW)  ⚠  refusing to replace branch protection without GIT_REPLACE_PROTECTION=1$(NC)\n"; \
@@ -148,6 +150,8 @@ git-protect-default-branch: ## Require PRs and successful CI before updating the
 # ═══════════════════════════════════════════════════════════════
 # ──── Configure: Creates the lifecycle labels required by Release Please. ────
 git-configure-release-labels: ## Create or update the Release Please lifecycle labels in GitHub
+	@printf "\n$(CYAN)🏷️  git-configure-release-labels · synchronizing lifecycle labels$(NC)\n"
+	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
 	@set -eu; \
 	if ! command -v gh > /dev/null 2>&1; then \
 		printf "$(RED)  ✗ GitHub CLI (gh) is required$(NC)\n"; \
@@ -170,6 +174,8 @@ git-configure-release-labels: ## Create or update the Release Please lifecycle l
 # ═══════════════════════════════════════════════════════════════
 # ──── Bootstrap: Installs local hooks and optionally configures GitHub. ────
 repository-bootstrap: ## Install local hooks; set CONFIGURE_REMOTE=1 for maintainer GitHub setup
+	@printf "\n$(CYAN)🚀 repository-bootstrap · configuring this repository$(NC)\n"
+	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
 	@$(MAKE) -s hooks-install
 	@if [ "$(CONFIGURE_REMOTE)" = "1" ]; then \
 		$(MAKE) -s git-configure-release-labels; \
