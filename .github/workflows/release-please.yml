@@ -23,3 +23,21 @@ jobs:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      - name: Check out published release
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.release.outputs.tag_name }}
+
+      - name: Upload source archive checksum
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          RELEASE_NAME: ${{ github.event.repository.name }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag_name }}
+        run: |
+          archive_name="${RELEASE_NAME}-${RELEASE_TAG}.tar.gz"
+          git archive --format=tar --prefix="${RELEASE_NAME}-${RELEASE_TAG}/" "$RELEASE_TAG" | gzip -n > "$archive_name"
+          sha256sum "$archive_name" > "${archive_name}.sha256"
+          gh release upload "$RELEASE_TAG" "$archive_name" "${archive_name}.sha256" --clobber

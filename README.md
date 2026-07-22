@@ -80,8 +80,9 @@ Dockerfile as project behavior takes shape.
 
 ## Packaging boundaries
 
-Upstream releases are source inputs for packaging. A separate AUR packaging
-repository may consume a release archive and maintain its `PKGBUILD`,
+Upstream releases are source inputs for packaging. Each published release
+attaches a reproducible source archive and matching `.sha256` file. A separate AUR packaging
+repository may consume those assets and maintain its `PKGBUILD`,
 `.SRCINFO`, checksums, and AUR publication. This template owns none of those
 packaging artifacts.
 
