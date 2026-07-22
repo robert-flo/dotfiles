@@ -2,6 +2,20 @@
 
 <!-- markdownlint-disable-file MD024 -->
 
+## [0.3.0](https://github.com/robert-flo/dotfiles/compare/v0.2.0...v0.3.0) (2026-07-22)
+
+
+### Features
+
+* **release:** ✨ publish source checksums ([002a7be](https://github.com/robert-flo/dotfiles/commit/002a7be4d915cb72b2db853d377b9a06443953e8))
+* **release:** ✨ publish source checksums ([34f7fb0](https://github.com/robert-flo/dotfiles/commit/34f7fb06c1b52e1ce9f8eb58a441ca4a76d2f6d8))
+
+
+### Bug Fixes
+
+* **release:** 🐛 allow generated changelog sections ([7d9a39f](https://github.com/robert-flo/dotfiles/commit/7d9a39f46811a443a27d7d1d4460dd82576bbf9f))
+* **release:** 🐛 allow generated changelog sections ([a287faf](https://github.com/robert-flo/dotfiles/commit/a287fafaea3f32f046b37b397e1b342065b5bd86))
+
 ## [0.2.0](https://github.com/robert-flo/dotfiles/compare/v0.1.0...v0.2.0) (2026-07-22)
 
 
