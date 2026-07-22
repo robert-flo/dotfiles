@@ -7,8 +7,9 @@ onboarding require repository-administrator access and can mutate a fork.
 
 `make repository-bootstrap` is the local interface. It verifies the required
 tools and installs the pre-commit Entrypoint. Maintainers opt into remote
-administration with `CONFIGURE_REMOTE=1`; that synchronizes the changelog-label
-catalog and replaces default-branch protection with the documented policy.
+administration with `CONFIGURE_REMOTE=1`; that synchronizes the release
+lifecycle labels and replaces default-branch protection with the documented
+policy.
 Replacing branch protection also requires the internal
 `GIT_REPLACE_PROTECTION=1` acknowledgement, supplied only by the maintainer
 path.

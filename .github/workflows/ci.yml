@@ -8,8 +8,6 @@ on:
       - opened
       - reopened
       - synchronize
-      - labeled
-      - unlabeled
   push:
     branches:
       - master

@@ -32,9 +32,8 @@ Please put an `x` in the boxes that apply:
 - [ ] My commit message follows the [commit guidelines](../COMMIT_MESSAGE_GUIDELINES.md).
 - [ ] My change requires a change to the documentation.
 - [ ] I have updated the documentation accordingly.
-- [ ] I selected one `changelog:<category>` label or `changelog:skip`.
-- [ ] I generated and reviewed the changelog locally, verified a second run is
-      idempotent, ran its tests, and committed the result before review.
+- [ ] I used a Conventional Commit type so Release Please can determine release intent.
+- [ ] I did not manually edit `CHANGELOG.md`, `version.txt`, or release tags.
 - [ ] I have added necessary comments/documentation to my code.
 - [ ] I have added tests to cover my changes.
 - [ ] I have tested my code locally and it works as expected.

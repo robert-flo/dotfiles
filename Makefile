@@ -15,6 +15,7 @@ include make/docker.mk
 include make/aliases.mk
 include make/hooks.mk
 include make/quality.mk
+include make/release.mk
 
 .PHONY: help
-help: help-git help-docker help-aliases help-hooks help-quality
+help: help-git help-docker help-aliases help-hooks help-quality help-release

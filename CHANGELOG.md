@@ -1,9 +1,7 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+Release Please maintains this file from releasable Conventional Commits.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-
-## Unreleased
-
-### Added
+Use `feat` for a minor release, `fix` for a patch release, and `!` or a
+`BREAKING CHANGE:` footer for a major release. Documentation and maintenance
+commits are intentionally omitted unless Release Please is configured otherwise.

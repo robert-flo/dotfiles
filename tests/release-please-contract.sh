@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+REPO_ROOT=""
+REPO_ROOT=$(git rev-parse --show-toplevel)
+readonly REPO_ROOT
+readonly RELEASE_CONFIG="$REPO_ROOT/release-please-config.json"
+readonly RELEASE_MANIFEST="$REPO_ROOT/.release-please-manifest.json"
+readonly RELEASE_WORKFLOW="$REPO_ROOT/.github/workflows/release-please.yml"
+readonly VERSION_FILE="$REPO_ROOT/version.txt"
+readonly GIT_MAKEFILE="$REPO_ROOT/make/git.mk"
+
+assert_file_exists() {
+  local file=$1
+
+  if [[ ! -f $file ]]; then
+    printf 'Expected file to exist: %s\n' "$file" >&2
+    exit 1
+  fi
+}
+
+assert_file_missing() {
+  local file=$1
+
+  if [[ -e $file ]]; then
+    printf 'Expected legacy file to be removed: %s\n' "$file" >&2
+    exit 1
+  fi
+}
+
+assert_contains() {
+  local expected=$1
+  local file=$2
+
+  if ! grep --fixed-strings --quiet -- "$expected" "$file"; then
+    printf 'Expected %s to contain: %s\n' "$file" "$expected" >&2
+    exit 1
+  fi
+}
+
+main() {
+  local help_output=""
+  local dollar='$'
+
+  assert_file_exists "$RELEASE_CONFIG"
+  assert_file_exists "$RELEASE_MANIFEST"
+  assert_file_exists "$RELEASE_WORKFLOW"
+  assert_file_exists "$VERSION_FILE"
+
+  if [[ $(< "$VERSION_FILE") != "0.1.0" ]]; then
+    printf 'version.txt must establish version 0.1.0.\n' >&2
+    exit 1
+  fi
+
+  jq --exit-status '
+    .["."] == "0.1.0"
+  ' "$RELEASE_MANIFEST" > /dev/null
+  jq --exit-status '
+    .["release-type"] == "simple" and
+    .["include-v-in-tag"] == true and
+    .packages["."]["release-type"] == "simple" and
+    .packages["."]["initial-version"] == "0.1.0" and
+    .packages["."]["version-file"] == "version.txt" and
+    .packages["."]["changelog-path"] == "CHANGELOG.md" and
+    .packages["."]["include-v-in-tag"] == true
+  ' "$RELEASE_CONFIG" > /dev/null
+
+  assert_contains 'googleapis/release-please-action@v4' "$RELEASE_WORKFLOW"
+  assert_contains 'RELEASE_PLEASE_TOKEN' "$RELEASE_WORKFLOW"
+  assert_contains 'autorelease: pending' "$RELEASE_CONFIG"
+  assert_contains 'autorelease: tagged' "$RELEASE_CONFIG"
+  assert_contains 'git-configure-release-labels' "$GIT_MAKEFILE"
+  assert_contains '"required_conversation_resolution":true' "$GIT_MAKEFILE"
+  assert_contains "\"required_approving_review_count\":${dollar}(GIT_PROTECTION_REQUIRED_APPROVALS)" "$GIT_MAKEFILE"
+
+  if grep --fixed-strings --quiet 'Validate committed changelog' "$GIT_MAKEFILE"; then
+    printf 'Branch protection must not require the retired changelog check.\n' >&2
+    exit 1
+  fi
+
+  assert_file_missing "$REPO_ROOT/.github/workflows/update-pr-changelog.yml"
+  assert_file_missing "$REPO_ROOT/.github/scripts/update-pr-changelog.sh"
+  assert_file_missing "$REPO_ROOT/.github/scripts/validate-pr-changelog.sh"
+  assert_file_missing "$REPO_ROOT/tests/changelog-automation.sh"
+
+  help_output=$(make -C "$REPO_ROOT" help)
+  if [[ $help_output != *'make release-check'* ]] || [[ $help_output != *'make release-status'* ]]; then
+    printf 'Make help must advertise the release diagnostics.\n' >&2
+    exit 1
+  fi
+
+  make -C "$REPO_ROOT" release-check
+
+  if rg --fixed-strings --quiet 'changelog-update' "$REPO_ROOT/Makefile" "$REPO_ROOT/make"; then
+    printf 'The Make interface must not retain the manual changelog generator.\n' >&2
+    exit 1
+  fi
+
+  printf 'Release Please contract tests passed.\n'
+}
+
+main "$@"

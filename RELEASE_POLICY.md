@@ -37,27 +37,39 @@ make repository-bootstrap CONFIGURE_REMOTE=1
 ```
 
 Maintainers use this command for the canonical repository. It installs the
-local Quality Gate, synchronizes changelog labels, and replaces the
-default-branch protection with the policy below. Contributors should run
-`make repository-bootstrap` to install only local hooks. Use `DRY_RUN=1`
-to preview remote changes.
+local Quality Gate and replaces default-branch protection with the policy
+below. Contributors should run `make repository-bootstrap` to install only
+local hooks. Use `DRY_RUN=1` to preview remote changes.
 
 ## Release lifecycle
 
-1. A maintainer creates a temporary `release/<YY.M.patch>` branch from the
-   current `master`.
-2. The release preparation moves every entry under `## Unreleased` into a
-   dated `## [YY.M.patch] - YYYY-MM-DD` section, preserving categories and
-   restoring an empty `Unreleased` section.
-3. The prepared release is validated in a pull request and merged into
-   `master`.
-4. From that merged commit, the maintainer creates the matching annotated tag
-   and GitHub Release. A release tag must point at the merge commit on
-   `master`, never at a topic branch.
+Release Please owns the release lifecycle. On every push to `master`, it reads
+releasable Conventional Commits and either updates its open release pull
+request or publishes the release when that pull request is merged.
 
-The changelog generator is intentionally pull-request scoped. Release
-preparation owns version headings and dates; it must not regenerate individual
-pull-request entries.
+1. A `feat` increments the minor version; a `fix` increments the patch
+   version; `!` or `BREAKING CHANGE:` increments the major version.
+2. Release Please opens a release pull request labeled `autorelease: pending`.
+   It updates `version.txt` and `CHANGELOG.md` in that pull request.
+3. Merge that generated pull request into `master` using the normal merge
+   commit policy.
+4. Release Please creates the `vX.Y.Z` tag and GitHub Release, then applies
+   `autorelease: tagged`.
+
+The repository starts at `0.1.0` and stores versions as `X.Y.Z` in
+`version.txt`. Release Please is the only component that calculates versions,
+edits the changelog, creates release tags, or creates GitHub Releases.
+
+The release workflow falls back to the repository `GITHUB_TOKEN` so a fresh
+template can run. Maintainers should set the `RELEASE_PLEASE_TOKEN` secret to
+a narrowly scoped maintainer token when the normal pull-request CI must run on
+Release Please-created pull requests: GitHub does not trigger other workflows
+from `GITHUB_TOKEN`-created events. Secrets are never committed.
+
+Release Please cannot use pull-request body overrides when release pull
+requests are merged with a merge commit. This repository deliberately keeps
+merge commits for its integration history, so contributors express release
+intent in Conventional Commit messages instead.
 
 ## CI events
 

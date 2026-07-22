@@ -12,11 +12,9 @@ The skills speak in terms of five canonical triage roles. This file maps those r
 
 When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding label string from this table.
 
-## Changelog labels
+## Release lifecycle labels
 
-Changelog labels are separate from the five-role triage vocabulary. Every pull
-request has exactly one of `changelog:added`, `changelog:changed`,
-`changelog:fixed`, `changelog:removed`, `changelog:security`,
-`changelog:deprecated`, or `changelog:skip`. The canonical repository
-synchronizes this catalog through `make repository-bootstrap
-CONFIGURE_REMOTE=1`.
+Release lifecycle labels are separate from the five-role triage vocabulary and
+are not contributor inputs. Release Please applies `autorelease: pending` to
+its open release pull request and `autorelease: tagged` after publication.
+Contributors use Conventional Commit messages to express release intent.
