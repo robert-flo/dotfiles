@@ -75,6 +75,8 @@ main() {
   assert_contains 'RELEASE_PLEASE_TOKEN' "$RELEASE_WORKFLOW"
   assert_contains 'autorelease: pending' "$RELEASE_CONFIG"
   assert_contains 'autorelease: tagged' "$RELEASE_CONFIG"
+  # shellcheck disable=SC2016 # Release Please placeholders must remain literal.
+  assert_contains '"pull-request-title-pattern": "chore${scope}: 🧹 release${component} ${version}"' "$RELEASE_CONFIG"
   assert_contains 'MD012: false' "$MARKDOWNLINT_CONFIG"
   assert_contains 'RELEASE_PLEASE_TOKEN' "$REPO_ROOT/make/release.mk"
   assert_contains 'gh secret list' "$REPO_ROOT/make/release.mk"
