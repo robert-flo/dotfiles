@@ -1,0 +1,4 @@
+extends: .markdownlint.yaml
+
+# Release Please intentionally separates its generated release heading and sections.
+MD012: false
