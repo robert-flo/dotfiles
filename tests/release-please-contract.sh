@@ -53,6 +53,7 @@ main() {
   assert_file_exists "$VERSION_FILE"
   assert_file_exists "$MARKDOWNLINT_CONFIG"
   assert_file_exists "$CHANGELOG_FILE"
+  assert_contains '<!-- markdownlint-disable-file MD024 -->' "$CHANGELOG_FILE"
 
   version=$(< "$VERSION_FILE")
   if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
