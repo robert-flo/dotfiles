@@ -60,7 +60,14 @@ test: ## Run repository behavior tests without modifying files
 	@set -euo pipefail; \
 	for test_file in tests/*.sh; do \
 	  [[ -e $$test_file ]] || continue; \
-	  if [[ -n "$(TEST_EXCLUDE)" && $$test_file == "$(TEST_EXCLUDE)" ]]; then \
+	  skip_test=0; \
+	  for excluded_test in $(TEST_EXCLUDE); do \
+	    if [[ $$test_file == $$excluded_test ]]; then \
+	      skip_test=1; \
+	      break; \
+	    fi; \
+	  done; \
+	  if ((skip_test)); then \
 	    continue; \
 	  fi; \
 	  bash "$$test_file"; \
