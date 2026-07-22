@@ -50,8 +50,17 @@ repos:
         additional_dependencies: ["markdownlint-cli2@0.17.2"]
         entry: markdownlint-cli2
         types: [markdown]
-        # Local Agent Tree is gitignored; optional defense in depth for force-adds.
-        exclude: ^\.agents/
+        # Local Agent Tree is gitignored; Release Please uses a scoped profile.
+        exclude: ^(\.agents/|CHANGELOG\.md$)
+
+      - id: markdownlint-release-please
+        name: markdownlint-release-please
+        language: node
+        language_version: "20.18.1"
+        additional_dependencies: ["markdownlint-cli2@0.17.2"]
+        entry: markdownlint-cli2 --config release-please.markdownlint.yaml CHANGELOG.md
+        pass_filenames: false
+        always_run: true
 
       # Shell Quality Gate: RaVN-owned script discovers staged shell itself.
       - id: ravn-shell-quality
