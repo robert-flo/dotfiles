@@ -76,6 +76,8 @@ main() {
   assert_contains 'autorelease: pending' "$RELEASE_CONFIG"
   assert_contains 'autorelease: tagged' "$RELEASE_CONFIG"
   assert_contains 'MD012: false' "$MARKDOWNLINT_CONFIG"
+  assert_contains 'RELEASE_PLEASE_TOKEN' "$REPO_ROOT/make/release.mk"
+  assert_contains 'gh secret list' "$REPO_ROOT/make/release.mk"
   assert_contains 'git-configure-release-labels' "$GIT_MAKEFILE"
   assert_contains '"required_conversation_resolution":true' "$GIT_MAKEFILE"
   assert_contains "\"required_approving_review_count\":${dollar}(GIT_PROTECTION_REQUIRED_APPROVALS)" "$GIT_MAKEFILE"
