@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+# User-facing help command module (construction stub / phase 1 skeleton).
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  set -Eeuo pipefail
+  module_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  # shellcheck disable=SC1091
+  source "$module_dir/../helper/set_variable.sh"
+  PROJECT_DIR="$RAVN_CLI_RUNTIME_DIR"
+  # shellcheck disable=SC1091
+  source "$PROJECT_DIR/lib/presentation.sh"
+  # shellcheck disable=SC1091 # Shared command metadata for global help.
+  source "$PROJECT_DIR/lib/command_catalog.sh"
+  # shellcheck disable=SC1091 # Focused command interface helper.
+  source "$PROJECT_DIR/lib/command_interface.sh"
+fi
+
+show_help() {
+  print_section "󰋖 Help and Usage"
+
+  cat << 'HELP_EOF'
+  ravn-cli is a modular interactive CLI scaffolded from the git-setup
+  template origin. Phase 1 uses construction stubs for command modules.
+
+  BASIC USE
+    ravn-cli              Open the interactive menu
+    ravn-cli <command>    Run one action directly
+
+  COMMANDS
+HELP_EOF
+
+  show_command_catalog || return 1
+
+  cat << 'HELP_EOF'
+
+  PHASE 1
+    Command modules keep real skeletons and design language but do not
+    perform live Git, GitHub, SSH, or GPG side effects yet.
+HELP_EOF
+}
+
+show_command_catalog() {
+  local command=""
+  local description=""
+
+  while IFS= read -r command; do
+    command_catalog_get "$command" description || {
+      print_error "$RAVN_CLI_COMMAND_CATALOG_ERROR"
+      return 1
+    }
+    description="$RAVN_CLI_COMMAND_CATALOG_VALUE"
+    printf '    %-8s %s\n' "$command" "$description"
+  done < <(command_catalog_list all)
+}
+
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  run_command_entrypoint help show_help show_help "$@"
+fi
