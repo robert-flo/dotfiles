@@ -17,6 +17,16 @@ assert_contains() {
   fi
 }
 
+assert_not_contains() {
+  local forbidden=$1
+  local file=$2
+
+  if grep --fixed-strings --quiet -- "$forbidden" "$file"; then
+    printf 'Expected %s not to contain: %s\n' "$file" "$forbidden" >&2
+    exit 1
+  fi
+}
+
 assert_make_target() {
   local target=$1
 
@@ -27,39 +37,24 @@ assert_make_target() {
 }
 
 main() {
-  local public_files=()
-  local file=""
   local target=""
 
-  assert_contains 'Bash project template' "$README_FILE"
-  assert_contains 'Use this template' "$README_FILE"
-  assert_contains 'one-commit history' "$README_FILE"
+  assert_contains 'RaVN Dotfiles' "$README_FILE"
   assert_contains 'Quality Gate' "$README_FILE"
   assert_contains 'Release Please' "$README_FILE"
-  assert_contains 'separate AUR packaging' "$README_FILE"
+  assert_contains 'docs/ravn-cli/README.md' "$README_FILE"
+  assert_contains 'ravn-cli' "$README_FILE"
+
+  assert_not_contains 'Bash project template' "$README_FILE"
+  assert_not_contains 'Use this template' "$README_FILE"
+  assert_not_contains 'Customize before publishing' "$README_FILE"
 
   for target in repository-bootstrap help format lint test verify docker-build docker-run docker-test release-check release-status; do
     assert_contains "make $target" "$README_FILE"
     assert_make_target "$target"
   done
 
-  public_files=(
-    "$README_FILE"
-    "$REPO_ROOT/CONTRIBUTING.md"
-    "$REPO_ROOT/.github/PULL_REQUEST_TEMPLATE.md"
-    "$REPO_ROOT/.github/ISSUE_TEMPLATE/bug_report.yml"
-    "$REPO_ROOT/.github/ISSUE_TEMPLATE/feature_request.yml"
-    "$REPO_ROOT/.github/ISSUE_TEMPLATE/documentation_update.yml"
-    "$REPO_ROOT/.github/ISSUE_TEMPLATE/custom.yml"
-  )
-  for file in "${public_files[@]}"; do
-    if grep --ignore-case --quiet --extended-regexp 'ravn|hyprland|hyprctl' "$file"; then
-      printf 'Public template file retains project-specific identity: %s\n' "$file" >&2
-      exit 1
-    fi
-  done
-
-  printf 'Public template documentation tests passed.\n'
+  printf 'Public product documentation tests passed.\n'
 }
 
 main "$@"

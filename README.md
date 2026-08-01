@@ -1,24 +1,20 @@
-# Bash project template
+# RaVN Dotfiles
 
-An opinionated starting point for public Bash packages, command-line tools, and
-dotfiles. It gives a new project a working executable, Docker baseline, quality
-gate, protected pull-request workflow, and automated releases before project
-logic exists.
+Rewrite of the maintainer's Arch Linux dotfiles and tooling. This monorepo is
+the **RaVN Dotfiles** product repository—not a generic public Bash template. It
+hosts the Quality Gate, release automation, worktree-oriented Make workflow, and
+the in-tree **ravn-cli** product CLI (phase-1 construction stubs).
 
-## Start a project
-
-Select **Use this template** on GitHub to create a new repository with a fresh,
-unrelated one-commit history. Clone or fork this repository instead when you
-want to retain its complete development history.
+## Get started
 
 ```bash
-git clone <your-repository-url>
-cd <your-repository-name>
+git clone git@github.com:robert-flo/dotfiles.git
+cd dotfiles
 make repository-bootstrap
 make verify
 ```
 
-Maintainers configure the canonical GitHub repository deliberately:
+Maintainers configuring the canonical GitHub repository:
 
 ```bash
 make repository-bootstrap CONFIGURE_REMOTE=1
@@ -39,8 +35,8 @@ pre-commit Entrypoint
         ├── GitHub Actions on pull requests and master
         └── protected master: PRs, CI, resolved conversations
 
-Dockerfile + dockerfile.sh ──> reproducible executable baseline
 Conventional Commits ────────> Release Please ──> release PR ──> tag + GitHub Release
+ravn-cli + runtime/ ─────────> product CLI (see docs/ravn-cli/)
 ```
 
 Every change follows temporary branch → pull request → `master`. Release
@@ -57,44 +53,29 @@ publishes the GitHub Release.
 | `make lint` | Run non-mutating hygiene, documentation, and shell checks. |
 | `make test` | Run behavioral contracts. |
 | `make verify` | Run lint and test together. |
-| `make docker-build` | Build the starter container. |
+| `make docker-build` | Build the monorepo starter container. |
 | `make docker-run` | Run the starter executable in Docker. |
 | `make docker-test` | Verify Docker output; skips when Docker is unavailable. |
 | `make release-check` | Validate checked-in Release Please configuration. |
 | `make release-status` | Show release PRs, releases, and token diagnostics. |
-
-The starter `dockerfile.sh` prints `Hello, world!`. Replace it and update the
-Dockerfile as project behavior takes shape.
-
-Product-specific CLI documentation for this monorepo lives under `docs/` (see
-the repository map and architecture docs) rather than this template-facing
-README.
-
-## Customize before publishing
-
-- [ ] Rename the repository, update its description, and replace repository URLs.
-- [ ] Replace ownership references and review the copyright holder in `LICENSE`.
-- [ ] Choose the license text and update its details if MIT is not appropriate.
-- [ ] Replace `dockerfile.sh`, Docker image behavior, and package metadata.
-- [ ] Confirm `version.txt`, Release Please labels, and release permissions.
-- [ ] Review issue forms, pull-request guidance, editor recommendations, and
-      repository policies for the project's audience.
-- [ ] Remove template examples and add the project's own usage, requirements,
-      support, and security information.
+| `./ravn-cli` | Product CLI interactive menu (or `./ravn-cli <command>`). |
+| `make ravn-cli-help` | Product CLI help without the menu. |
 
 ## Packaging boundaries
 
 Upstream releases are source inputs for packaging. Each published release
-attaches a reproducible source archive and matching `.sha256` file. A separate AUR packaging
-repository may consume those assets and maintain its `PKGBUILD`,
-`.SRCINFO`, checksums, and AUR publication. This template owns none of those
-packaging artifacts.
+attaches a reproducible source archive and matching `.sha256` file. A separate
+AUR packaging repository may consume those assets and maintain its `PKGBUILD`,
+`.SRCINFO`, checksums, and AUR publication. This product repository owns none
+of those packaging artifacts.
 
 ## Documentation
 
 - [Contributing](CONTRIBUTING.md)
+- [ravn-cli product CLI](docs/ravn-cli/README.md)
 - [Make command reference](docs/make/)
 - [Repository map](docs/repository-map.md)
+- [Domain vocabulary](CONTEXT.md)
 - [Commit message guidelines](COMMIT_MESSAGE_GUIDELINES.md)
 - [Release policy](RELEASE_POLICY.md)
 - [Editor recommendations](.vscode/extensions.json)

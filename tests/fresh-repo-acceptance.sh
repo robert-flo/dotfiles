@@ -5,11 +5,11 @@ set -euo pipefail
 REPO_ROOT=""
 REPO_ROOT=$(git rev-parse --show-toplevel)
 readonly REPO_ROOT
-readonly SELF_TEST="tests/fresh-template-acceptance.sh"
+readonly SELF_TEST="tests/fresh-repo-acceptance.sh"
 TEMP_DIR=""
 TEMP_DIR=$(mktemp -d)
 readonly TEMP_DIR
-readonly FIXTURE_DIR="$TEMP_DIR/template-copy"
+readonly FIXTURE_DIR="$TEMP_DIR/repo-copy"
 readonly RELEASE_WORKFLOW="$FIXTURE_DIR/.github/workflows/release-please.yml"
 readonly RELEASE_CONFIG="$FIXTURE_DIR/release-please-config.json"
 readonly RELEASE_MANIFEST="$FIXTURE_DIR/.release-please-manifest.json"
@@ -38,7 +38,7 @@ assert_clean() {
 
   status=$(git -C "$FIXTURE_DIR" status --porcelain)
   if [[ -n $status ]]; then
-    printf 'Fresh template fixture is dirty after %s.\n' "$description" >&2
+    printf 'Fresh-repo fixture is dirty after %s.\n' "$description" >&2
     git -C "$FIXTURE_DIR" diff --exit-code >&2 || true
     exit 1
   fi
@@ -47,10 +47,10 @@ assert_clean() {
 materialize_fixture() {
   git -C "$REPO_ROOT" archive --format=tar HEAD | tar -xf - -C "$FIXTURE_DIR"
   git -C "$FIXTURE_DIR" init --initial-branch=master --quiet
-  git -C "$FIXTURE_DIR" config user.email 'template@example.invalid'
-  git -C "$FIXTURE_DIR" config user.name 'Template Acceptance'
+  git -C "$FIXTURE_DIR" config user.email 'acceptance@example.invalid'
+  git -C "$FIXTURE_DIR" config user.name 'Repo Acceptance'
   git -C "$FIXTURE_DIR" add --all
-  git -C "$FIXTURE_DIR" commit --quiet --message 'Initial template commit'
+  git -C "$FIXTURE_DIR" commit --quiet --message 'Initial product commit'
 }
 
 verify_fresh_history() {
@@ -58,7 +58,7 @@ verify_fresh_history() {
 
   commit_count=$(git -C "$FIXTURE_DIR" rev-list --count HEAD)
   if [[ $commit_count != "1" ]]; then
-    printf 'Fresh template fixture must start with exactly one commit.\n' >&2
+    printf 'Fresh-repo fixture must start with exactly one commit.\n' >&2
     exit 1
   fi
 }
@@ -68,7 +68,7 @@ verify_release_contract() {
 
   version=$(< "$VERSION_FILE")
   if [[ ! $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    printf 'Fresh template fixture must contain an X.Y.Z version.\n' >&2
+    printf 'Fresh-repo fixture must contain an X.Y.Z version.\n' >&2
     exit 1
   fi
 
@@ -81,7 +81,7 @@ verify_release_contract() {
   assert_contains 'issues: write' "$RELEASE_WORKFLOW"
   assert_contains 'pull-requests: write' "$RELEASE_WORKFLOW"
   if ! jq --exit-status --arg version "$version" '.["."] == $version' "$RELEASE_MANIFEST" > /dev/null; then
-    printf 'Release manifest must match version.txt in the fresh template fixture.\n' >&2
+    printf 'Release manifest must match version.txt in the fresh-repo fixture.\n' >&2
     exit 1
   fi
 }
@@ -103,9 +103,9 @@ verify_bootstrap_contract() {
   assert_contains '"allow_deletions":false' "$GIT_MAKEFILE"
 }
 
-verify_public_template_contract() {
-  bash "$FIXTURE_DIR/tests/public-template-docs.sh"
-  assert_clean 'public template validation'
+verify_public_product_docs_contract() {
+  bash "$FIXTURE_DIR/tests/public-product-docs.sh"
+  assert_clean 'public product docs validation'
 }
 
 run_aggregate_verification() {
@@ -125,9 +125,9 @@ main() {
   verify_release_contract
   assert_clean 'release configuration validation'
   verify_bootstrap_contract
-  verify_public_template_contract
+  verify_public_product_docs_contract
   run_aggregate_verification
-  printf 'Fresh template acceptance tests passed.\n'
+  printf 'Fresh-repo acceptance tests passed.\n'
 }
 
 main "$@"
