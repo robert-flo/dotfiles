@@ -111,6 +111,18 @@ user bin directory.
 | `make/ravn-cli/workflow/s` | Portable companion for the `s` workflow surface. |
 | `make/ravn-cli/workflow/st` | Portable companion for the `st` workflow surface. |
 
+
+## ravn-cli product Make and Docker surfaces
+
+| File | Purpose and reason |
+| --- | --- |
+| `make/ravn-cli/aliases.mk` | Prefixed product Make aliases (e.g. ravn-cli-dr). |
+| `make/ravn-cli/docker.mk` | Prefixed product Docker build/run/clean targets. |
+| `make/ravn-cli/git.mk` | Prefixed product Git/workflow Make help and ravn-cli-help. |
+| `docker/ravn-cli/Dockerfile` | Arch product image for ephemeral ravn-cli trials. |
+| `docker/ravn-cli/ubuntu.Dockerfile` | Ubuntu product image for ephemeral ravn-cli trials. |
+| `docker/ravn-cli/fedora.Dockerfile` | Fedora product image for ephemeral ravn-cli trials. |
+
 ## Make command modules
 
 | File | Purpose and reason |

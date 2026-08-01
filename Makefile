@@ -16,6 +16,9 @@ include make/aliases.mk
 include make/hooks.mk
 include make/quality.mk
 include make/release.mk
+include make/ravn-cli/git.mk
+include make/ravn-cli/docker.mk
+include make/ravn-cli/aliases.mk
 
 .PHONY: help
-help: help-git help-docker help-aliases help-hooks help-quality help-release
+help: help-git help-docker help-aliases help-hooks help-quality help-release help-ravn-cli-git help-ravn-cli-docker help-ravn-cli-aliases
