@@ -1,0 +1,3 @@
+# canonical	aliases	label	description	icon	menu	options
+demo	d --demo	Demo construction stub	Print a phase-1 construction stub message.		1	-h --help
+help	h --help -h	Help and usage	Show this guide.	󰋖	1	-h --help

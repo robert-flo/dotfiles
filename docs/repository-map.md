@@ -28,6 +28,22 @@ this map whenever an in-scope file is added, removed, or changes purpose.
 | `dockerfile.sh` | Provides the executable Hello World payload verified by the Docker contract. |
 | `release-please-config.json` | Configures Release Please changelogs, release assets, and Gitmoji commit titles. |
 | `version.txt` | Supplies the template version consumed by its release and verification contracts. |
+| `ravn-cli` | Root launcher for the ravn-cli product: interactive menu and command dispatch. |
+
+## ravn-cli runtime payload
+
+| File | Purpose and reason |
+| --- | --- |
+| `runtime/commands.tsv` | Language-neutral command catalog for menu, dispatch, help, and completion. |
+| `runtime/helper/set_variable.sh` | Shared product path and identity variables (`RAVN_CLI_*` and domain paths). |
+| `runtime/lib/command_catalog.sh` | Loads and queries the command catalog for launchers and modules. |
+| `runtime/lib/command_interface.sh` | Shared entrypoint helper for module help versus operation dispatch. |
+| `runtime/lib/dependencies.sh` | Operational package probes (relaxed in phase 1; structure kept for later). |
+| `runtime/lib/dispatch.sh` | Resolves catalog names and executes command modules as processes. |
+| `runtime/lib/lifecycle.sh` | Runtime cleanup trap shared by the launcher. |
+| `runtime/lib/presentation.sh` | Shared design-language printers, colors, and icons for ravn-cli. |
+| `runtime/scripts/demo` | Phase-1 construction stub demonstrating a numbered menu command module. |
+| `runtime/scripts/help` | Help command module for global and per-invocation usage text. |
 
 ## Contributor tooling and editor support
 
@@ -78,6 +94,7 @@ this map whenever an in-scope file is added, removed, or changes purpose.
 | `docs/adr/0008-no-shell-path-exclusions.md` | Establishes that every staged shell file is subject to the ShellCheck gate. |
 | `docs/adr/0009-repository-bootstrap-scope.md` | Defines the safe boundary between local bootstrap and canonical remote configuration. |
 | `docs/adr/0010-release-please-managed-lifecycle.md` | Records the Release Please ownership model for versions, changelogs, and releases. |
+| `docs/adr/0011-ravn-cli-scaffolded-from-git-setup.md` | Records why ravn-cli is scaffolded from git-setup and evolves independently. |
 | `docs/agents/domain.md` | Explains where shared domain vocabulary and architectural decisions are maintained. |
 | `docs/agents/issue-tracker.md` | Documents GitHub issue workflow and the metadata agents must maintain. |
 | `docs/agents/triage-labels.md` | Defines the common label vocabulary used to classify and route repository work. |

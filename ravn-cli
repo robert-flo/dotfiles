@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+# Interactive menu and command-line dispatcher for ravn-cli.
+
+set -Eeuo pipefail
+
+#--------------------------------#
+# import variables and functions #
+#--------------------------------#
+# Resolve the project directory and load shared variables and presentation helpers.
+scr_dir="$(dirname "$(realpath "$0")")"
+runtime_dir="$scr_dir/runtime"
+# shellcheck disable=SC1091 # Resolved from the project root.
+source "$runtime_dir/helper/set_variable.sh"
+PROJECT_DIR="$RAVN_CLI_RUNTIME_DIR"
+# shellcheck disable=SC1091
+if ! source "$PROJECT_DIR/lib/presentation.sh"; then
+  echo "Error: unable to source presentation.sh..."
+  exit 1
+fi
+# shellcheck disable=SC1091
+source "$PROJECT_DIR/lib/dependencies.sh"
+# shellcheck disable=SC1091
+source "$PROJECT_DIR/lib/lifecycle.sh"
+# shellcheck disable=SC1091
+source "$PROJECT_DIR/lib/command_catalog.sh"
+# shellcheck disable=SC1091
+source "$PROJECT_DIR/lib/dispatch.sh"
+
+trap cleanup_runtime SIGINT SIGTERM ERR EXIT
+
+is_running_in_docker() {
+  [[ ${RAVN_CLI_DOCKER_TRIAL:-} == 1 ]] && return 0
+  [[ -f /.dockerenv ]] && return 0
+  [[ -r /proc/1/cgroup ]] && grep -qaE '/(docker|containerd)(/|$)' /proc/1/cgroup
+}
+
+clear_screen() {
+  # Keep captured output readable in tests, CI, and non-interactive commands.
+  [[ -t 1 && ${TERM:-dumb} != dumb ]] || return 0
+  printf '\033[H\033[2J'
+}
+
+show_ravn_banner() {
+  local gh_user=""
+  gh_user=$(gh api user -q .login 2> /dev/null || echo "ravn-ruby-path")
+  echo -e "${CYAN}"
+  cat << 'BANNER_EOF'
+  ╭────────────────────────────────────────────────────╮
+  │                                                    │
+  │  ██████╗  █████╗ ██╗   ██╗███╗   ██╗               │
+  │  ██╔══██╗██╔══██╗██║   ██║████╗  ██║               │
+  │  ██████╔╝███████║██║   ██║██╔██╗ ██║               │
+  │  ██╔══██╗██╔══██║╚██╗ ██╔╝██║╚██╗██║               │
+  │  ██║  ██║██║  ██║ ╚████╔╝ ██║ ╚████║               │
+  │  ╚═╝  ╚═╝╚═╝  ╚═╝  ╚═══╝  ╚═╝  ╚═══╝               │
+  │                                                    │
+  │   Git + GitHub + GPG Configuration for Arch Linux  │
+  │                                                    │
+BANNER_EOF
+  echo -e "  │     ${GRAY}by Roberto Flores ${WHITE}@${gh_user}${CYAN}                  │"
+  if is_running_in_docker; then
+    echo -e "  │     ${YELLOW}󰡨 Running inside Docker${CYAN}                         │"
+  fi
+  cat << 'BANNER_EOF'
+  │                                                    │
+  ╰────────────────────────────────────────────────────╯
+BANNER_EOF
+  echo -e "${NC}"
+}
+
+is_help_command() {
+  case "${1:-}" in
+    help | h | --help | -h) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# Menu rows for non-help commands, indexed in display order (1-based selection).
+RAVN_CLI_MENU_COMMANDS=()
+
+show_menu() {
+  local command=""
+  local label=""
+  local icon=""
+  local menu_index=1
+
+  RAVN_CLI_MENU_COMMANDS=()
+  echo ""
+  print_section "${RAVN_ICON[ui_command]} Choose an action"
+  while IFS= read -r command; do
+    command_catalog_get "$command" label || {
+      print_error "$RAVN_CLI_COMMAND_CATALOG_ERROR"
+      return 1
+    }
+    label="$RAVN_CLI_COMMAND_CATALOG_VALUE"
+    command_catalog_get "$command" icon || {
+      print_error "$RAVN_CLI_COMMAND_CATALOG_ERROR"
+      return 1
+    }
+    icon="$RAVN_CLI_COMMAND_CATALOG_VALUE"
+    if [[ $command == "help" ]]; then
+      echo -e "  ${GREEN}h${NC}  $icon  $label"
+    else
+      RAVN_CLI_MENU_COMMANDS+=("$command")
+      echo -e "  ${GREEN}$menu_index${NC}  $icon  $label"
+      ((menu_index += 1))
+    fi
+  done < <(command_catalog_list menu)
+  echo -e "  ${GREEN}q${NC}  ${RAVN_ICON[ui_close]}  Exit"
+  echo ""
+  echo -ne "  ${LIGHT_GRAY}Selection:${NC} "
+}
+
+run_interactive_menu() {
+  local choice=""
+  local selected_index=0
+
+  while true; do
+    show_menu
+    read -r choice
+    case "$choice" in
+      # An interactive action may report a non-zero status. Keep the menu alive
+      # so the user can read the result; direct subcommands retain their exit
+      # status through the dispatcher.
+      h | H) dispatch_command help || true ;;
+      q | Q)
+        echo ""
+        print_info "Goodbye!"
+        return 0
+        ;;
+      *)
+        if [[ $choice =~ ^[0-9]+$ ]]; then
+          selected_index=$((choice))
+          if ((selected_index >= 1 && selected_index <= ${#RAVN_CLI_MENU_COMMANDS[@]})); then
+            dispatch_command "${RAVN_CLI_MENU_COMMANDS[selected_index - 1]}" || true
+          else
+            print_error "Invalid option"
+          fi
+        else
+          print_error "Invalid option"
+        fi
+        ;;
+    esac
+    echo ""
+    echo -ne "  ${GRAY}Press Enter to continue...${NC}"
+    read -r
+    clear_screen
+    show_ravn_banner
+  done
+}
+
+main() {
+  if (($# > 0)) && is_help_command "$1"; then
+    dispatch_command "$@" || return $?
+    return 0
+  fi
+
+  # docker-run prints its isolation notice immediately before launching us.
+  # Preserve that context on the first screen inside a container; subsequent
+  # menu navigation can still use clear_screen normally.
+  if ! is_running_in_docker; then
+    clear_screen
+  fi
+  verify_dependencies || return 1
+
+  show_ravn_banner
+
+  if (($# > 0)); then
+    dispatch_command "$@" || return $?
+    return 0
+  fi
+
+  run_interactive_menu
+}
+
+main "$@"
