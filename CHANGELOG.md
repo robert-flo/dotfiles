@@ -2,6 +2,29 @@
 
 <!-- markdownlint-disable-file MD024 -->
 
+## [0.4.0](https://github.com/robert-flo/dotfiles/compare/v0.3.0...v0.4.0) (2026-08-01)
+
+
+### Features
+
+* **docs:** RaVN Dotfiles product identity and acceptance contracts ([ade9daf](https://github.com/robert-flo/dotfiles/commit/ade9daf956db0851070cb50b54c71aa8c29be6db))
+* **docs:** T1 RaVN Dotfiles product docs + acceptance renames ([c509856](https://github.com/robert-flo/dotfiles/commit/c5098565a8eaaaef9a3e0ca0010cb31604ff0c60))
+* **ravn-cli:** full command catalog with construction stubs (T2) ([e224e9b](https://github.com/robert-flo/dotfiles/commit/e224e9be14c676cbb1d9ff6b9027f6196ea929b5))
+* **ravn-cli:** near-complete construction tree from template origin (T3) ([87c6b88](https://github.com/robert-flo/dotfiles/commit/87c6b88f153b48cda38c4d9caaf5aea17bb71355))
+* **ravn-cli:** product Make/Docker surfaces and process suite (T4/T5) ([ba1f169](https://github.com/robert-flo/dotfiles/commit/ba1f169a6b38ec94bdbed027d0966f796618f546))
+* **ravn-cli:** scaffold launcher and help construction stub (T1) ([e48b378](https://github.com/robert-flo/dotfiles/commit/e48b37812b19602671b3fdfdb443e963c999d76e))
+* **ravn-cli:** T1 launcher + help/demo construction stubs ([484b521](https://github.com/robert-flo/dotfiles/commit/484b521596a3d708862b8baafe0e645040dc32d2))
+* **ravn-cli:** T2 full catalog + construction stubs ([c0e10d9](https://github.com/robert-flo/dotfiles/commit/c0e10d98b4348ce82c4c3029e0c5ca28bae77dea))
+* **ravn-cli:** T3 near-complete construction tree ([7fadf4f](https://github.com/robert-flo/dotfiles/commit/7fadf4f2435dc5010103a3395769d4938025fb61))
+* **ravn-cli:** T4 process suite + T5 Make/Docker surfaces ([d32b2bf](https://github.com/robert-flo/dotfiles/commit/d32b2bfb5840ecc746a7abc36e8ec71b8af63b52))
+
+
+### Bug Fixes
+
+* **ravn-cli:** address T1 review — numbered menu, map, verify path ([b40a205](https://github.com/robert-flo/dotfiles/commit/b40a205567072e7cfbbf4697b06cda7f3caaaba7))
+* **ravn-cli:** avoid subshell formatting conflict in T1 tests ([090f615](https://github.com/robert-flo/dotfiles/commit/090f6154cebb12534f65432168fde6479fa85e98))
+* **ravn-cli:** trim trailing whitespace in T1 launcher test ([1ed8eed](https://github.com/robert-flo/dotfiles/commit/1ed8eedf3e283d48a0268731dad0fda3b1b97da5))
+
 ## [0.3.0](https://github.com/robert-flo/dotfiles/compare/v0.2.0...v0.3.0) (2026-07-22)
 
 
