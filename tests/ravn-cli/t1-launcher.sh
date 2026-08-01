@@ -39,7 +39,7 @@ HOME_DIR="$TEST_ROOT/home"
 mkdir -p "$HOME_DIR"
 
 run_cli() {
-  ( 
+  (
     cd "$TEST_ROOT"
     HOME="$HOME_DIR" XDG_CONFIG_HOME="$HOME_DIR/.config" TERM=dumb NO_COLOR=1 \
       "$RAVN_CLI" "$@"
@@ -47,7 +47,7 @@ run_cli() {
 }
 
 run_module() {
-  ( 
+  (
     cd "$TEST_ROOT"
     HOME="$HOME_DIR" XDG_CONFIG_HOME="$HOME_DIR/.config" TERM=dumb NO_COLOR=1 \
       "$HELP_MODULE" "$@"
@@ -81,7 +81,7 @@ fi
 # Direct construction stub via launcher and module path.
 run_cli demo > "$TEST_ROOT/demo-launcher.out" 2>&1
 require_output "$TEST_ROOT/demo-launcher.out" "hola desde demo"
-( 
+(
   cd "$TEST_ROOT"
   HOME="$HOME_DIR" XDG_CONFIG_HOME="$HOME_DIR/.config" TERM=dumb NO_COLOR=1 \
     "$DEMO_MODULE"
