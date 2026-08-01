@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Construction stub: skeleton mirrors template-origin command modules.
+# Guided setup command module (construction stub).
 if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
   set -Eeuo pipefail
   module_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -9,28 +9,28 @@ if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
   PROJECT_DIR="$RAVN_CLI_RUNTIME_DIR"
   # shellcheck disable=SC1091
   source "$PROJECT_DIR/lib/presentation.sh"
-  # shellcheck disable=SC1091
+  # shellcheck disable=SC1091 # Shared command metadata.
   source "$PROJECT_DIR/lib/command_catalog.sh"
-  # shellcheck disable=SC1091
+  # shellcheck disable=SC1091 # Focused command interface helper.
   source "$PROJECT_DIR/lib/command_interface.sh"
 fi
 
-show_demo_help() {
-  print_section " Demo construction stub"
+show_setup_help() {
+  print_section "Full Setup Usage"
   cat << 'HELP_EOF'
-  Usage: ravn-cli demo [-h|--help]
+  Usage: ravn-cli setup [-h|--help]
 
-  Phase-1 construction stub. Prints a stub message and does not mutate system
-  configuration.
+  Configure GitHub, SSH, GPG, and commit signing. Phase 1 is a construction
+  stub: no keys or configuration are created.
 HELP_EOF
 }
 
-do_demo() {
-  print_section " Demo construction stub"
-  print_info "hola desde demo"
+do_setup() {
+  print_section "${ICON_GEAR} Run full setup"
+  print_info "hola desde setup"
   print_success "Construction stub completed with no domain side effects"
 }
 
 if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
-  run_command_entrypoint demo show_demo_help do_demo "$@"
+  run_command_entrypoint setup show_setup_help do_setup "$@"
 fi

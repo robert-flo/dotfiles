@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+# clean command module (construction stub).
+# Returns non-zero so menu recovery and direct CLI exit propagation can be tested.
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  set -Eeuo pipefail
+  module_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  # shellcheck disable=SC1091
+  source "$module_dir/../helper/set_variable.sh"
+  PROJECT_DIR="$RAVN_CLI_RUNTIME_DIR"
+  # shellcheck disable=SC1091
+  source "$PROJECT_DIR/lib/presentation.sh"
+  # shellcheck disable=SC1091 # Shared command metadata.
+  source "$PROJECT_DIR/lib/command_catalog.sh"
+  # shellcheck disable=SC1091 # Focused command interface helper.
+  source "$PROJECT_DIR/lib/command_interface.sh"
+fi
+
+show_clean_help() {
+  print_section "Git Cleanup Usage"
+  cat << 'HELP_EOF'
+  Usage: ravn-cli clean [-h|--help]
+
+  Remove ravn-cli-managed keys, generated files, workflow commands, and GitHub
+  CLI authentication after confirmation. Phase 1 is a construction stub: nothing
+  is removed. The stub exits non-zero to exercise recoverable menu failures.
+HELP_EOF
+}
+
+do_clean() {
+  print_section "Clean local config (fresh start)"
+  print_info "hola desde clean"
+  print_error "Construction stub refused destructive cleanup (phase 1)"
+  return 1
+}
+
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  run_command_entrypoint clean show_clean_help do_clean "$@"
+fi
