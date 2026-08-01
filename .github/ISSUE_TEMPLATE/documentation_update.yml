@@ -1,12 +1,12 @@
 name: Documentation update
-description: Propose a change to the project documentation
+description: Propose a documentation change for RaVN Dotfiles
 title: "[Docs]: Short description of the change"
 labels: ["documentation"]
 body:
   - type: markdown
     attributes:
       value: |
-        ## Documentation Update
+        ## Documentation Update (RaVN Dotfiles)
 
   - type: textarea
     id: description

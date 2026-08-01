@@ -1,12 +1,12 @@
 name: Bug report
-description: Create a report to help us improve
+description: Report a bug in RaVN Dotfiles
 title: "[Bug]: Short description of the issue"
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        ## Bug Report
+        ## Bug Report (RaVN Dotfiles)
 
   - type: textarea
     id: description

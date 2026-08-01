@@ -1,7 +1,8 @@
-# Contributing to this Bash project
+# Contributing to RaVN Dotfiles
 
-Thank you for improving this Bash project. Bug fixes, scripts, documentation,
-and tests are all welcome.
+Thank you for improving **RaVN Dotfiles**, the rewrite of the maintainer's Arch
+Linux dotfiles and tooling. Bug fixes, scripts, documentation, and tests are
+all welcome.
 
 ## Getting started
 
@@ -65,3 +66,4 @@ make release-check
 - [Release policy](RELEASE_POLICY.md)
 - [Release Please diagnostics](make/release.mk)
 - [Project README](README.md)
+- [ravn-cli product CLI](docs/ravn-cli/README.md)

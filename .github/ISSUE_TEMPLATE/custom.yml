@@ -1,11 +1,11 @@
-name: Custom template
-description: Use this template to submit a custom issue
+name: Custom issue
+description: Submit a custom issue for RaVN Dotfiles
 title: "[Custom]: Short description of the issue"
 body:
   - type: markdown
     attributes:
       value: |
-        ## Custom Template
+        ## Custom Issue (RaVN Dotfiles)
 
   - type: textarea
     id: description
