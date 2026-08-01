@@ -42,8 +42,13 @@ this map whenever an in-scope file is added, removed, or changes purpose.
 | `runtime/lib/dispatch.sh` | Resolves catalog names and executes command modules as processes. |
 | `runtime/lib/lifecycle.sh` | Runtime cleanup trap shared by the launcher. |
 | `runtime/lib/presentation.sh` | Shared design-language printers, colors, and icons for ravn-cli. |
+| `runtime/scripts/clean` | Construction stub for cleanup (phase 1 exits non-zero; no deletions). |
+| `runtime/scripts/config` | Construction stub for managed Git configuration refresh. |
 | `runtime/scripts/demo` | Phase-1 construction stub demonstrating a numbered menu command module. |
 | `runtime/scripts/help` | Help command module for global and per-invocation usage text. |
+| `runtime/scripts/setup` | Construction stub for full GitHub/SSH/GPG setup. |
+| `runtime/scripts/test` | Construction stub for the integration test operation. |
+| `runtime/scripts/verify` | Construction stub for read-only configuration verification. |
 
 ## Contributor tooling and editor support
 

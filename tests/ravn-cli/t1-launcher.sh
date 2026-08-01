@@ -83,8 +83,8 @@ require_output "$TEST_ROOT/demo-launcher.out" "hola desde demo"
 run_with_test_env "$DEMO_MODULE" > "$TEST_ROOT/demo-module.out" 2>&1
 require_output "$TEST_ROOT/demo-module.out" "hola desde demo"
 
-# Interactive menu: design language, numbered demo, h help, q exit.
-printf '1\n\nh\n\nq\n' | run_cli > "$TEST_ROOT/menu.out" 2>&1 || true
+# Interactive menu: design language, numbered demo (catalog row 5), h help, q exit.
+printf '5\n\nh\n\nq\n' | run_cli > "$TEST_ROOT/menu.out" 2>&1 || true
 require_output "$TEST_ROOT/menu.out" "Choose an action"
 require_output "$TEST_ROOT/menu.out" "Demo construction stub"
 require_output "$TEST_ROOT/menu.out" "Help and usage"
