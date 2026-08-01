@@ -149,6 +149,7 @@ user bin directory.
 | `docs/adr/0009-repository-bootstrap-scope.md` | Defines the safe boundary between local bootstrap and canonical remote configuration. |
 | `docs/adr/0010-release-please-managed-lifecycle.md` | Records the Release Please ownership model for versions, changelogs, and releases. |
 | `docs/adr/0011-ravn-cli-scaffolded-from-git-setup.md` | Records why ravn-cli is scaffolded from git-setup and evolves independently. |
+| `docs/adr/0012-product-repo-not-public-bash-template.md` | Records that this monorepo is RaVN Dotfiles product, not a public Bash template. |
 | `docs/ravn-cli/README.md` | Collaborator wayfinding for the ravn-cli product (phase 1 stubs). |
 | `docs/agents/domain.md` | Explains where shared domain vocabulary and architectural decisions are maintained. |
 | `docs/agents/issue-tracker.md` | Documents GitHub issue workflow and the metadata agents must maintain. |

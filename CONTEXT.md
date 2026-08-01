@@ -1,8 +1,36 @@
 # RaVN Dotfiles
 
-Domain language for the RaVN Arch Linux utility/dotfiles repository — quality gates, configuration tracking, and agent workflow vocabulary that are specific to this project.
+Domain language for the **RaVN Dotfiles** product repository: a rewrite of the
+maintainer's Arch Linux dotfiles and tooling. This monorepo is a **product**,
+not a reusable public Bash project template. Vocabulary covers quality gates,
+configuration tracking, agent workflow, and the in-tree **ravn-cli** product CLI.
 
 ## Language
+
+### Product identity
+
+**RaVN Dotfiles**:
+The public name of this repository's product: the rewrite of the maintainer's
+Arch Linux dotfiles and related tooling hosted at the `dotfiles` GitHub repo.
+_Avoid_: Bash project template, generic public template, Use this template repo
+
+**Product repository**:
+This monorepo as the owned product codebase (docs, gates, ravn-cli, future
+dotfile surfaces), not a starter skeleton meant for unrelated forks via GitHub
+template mode.
+_Avoid_: public template contract, template-facing README as the primary identity
+
+**Public product docs**:
+First-party documentation and GitHub forms that speak to RaVN Dotfiles
+contributors and users (README, CONTRIBUTING, issue/PR templates, product
+acceptance tests).
+_Avoid_: template checklist "Customize before publishing", ban on product names in public docs
+
+**Fresh-repo acceptance**:
+The offline acceptance harness that materializes a clean tree and checks
+release, bootstrap, and aggregate verification contracts for this product repo
+(renamed from fresh-template acceptance).
+_Avoid_: fresh template acceptance as the product name, public template contract as a required step
 
 ### Commit quality
 
