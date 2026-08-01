@@ -93,8 +93,8 @@ test: ## Run repository behavior tests without modifying files
 	@printf "\n$(CYAN)✅ test · running repository behavior contracts$(NC)\n"
 	@printf "$(CYAN)────────────────────────────────────────────────────────────────────────────────$(NC)\n"
 	@set -euo pipefail; \
-	for test_file in tests/*.sh; do \
-	  [[ -e $$test_file ]] || continue; \
+	while IFS= read -r test_file; do \
+	  [[ -n $$test_file ]] || continue; \
 	  skip_test=0; \
 	  for excluded_test in $(TEST_EXCLUDE); do \
 	    if [[ $$test_file == $$excluded_test ]]; then \
@@ -106,7 +106,7 @@ test: ## Run repository behavior tests without modifying files
 	    continue; \
 	  fi; \
 	  bash "$$test_file"; \
-	done
+	done < <(find tests -type f -name '*.sh' | LC_ALL=C sort)
 	@printf "\n$(GREEN)  ✓ behavior contracts passed$(NC)\n\n"
 
 # ═══════════════════════════════════════════════════════════════

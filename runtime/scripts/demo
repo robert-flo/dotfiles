@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+# Construction stub: skeleton mirrors template-origin command modules.
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  set -Eeuo pipefail
+  module_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  # shellcheck disable=SC1091
+  source "$module_dir/../helper/set_variable.sh"
+  PROJECT_DIR="$RAVN_CLI_RUNTIME_DIR"
+  # shellcheck disable=SC1091
+  source "$PROJECT_DIR/lib/presentation.sh"
+  # shellcheck disable=SC1091
+  source "$PROJECT_DIR/lib/command_catalog.sh"
+  # shellcheck disable=SC1091
+  source "$PROJECT_DIR/lib/command_interface.sh"
+fi
+
+show_demo_help() {
+  print_section " Demo construction stub"
+  cat << 'HELP_EOF'
+  demo is a phase-1 construction stub.
+
+  USAGE
+    ravn-cli demo
+    runtime/scripts/demo
+
+  It prints a stub message and does not mutate system configuration.
+HELP_EOF
+}
+
+do_demo() {
+  print_section " Demo construction stub"
+  print_info "hola desde demo"
+  print_success "Construction stub completed with no domain side effects"
+}
+
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  run_command_entrypoint demo show_demo_help do_demo "$@"
+fi

@@ -2,7 +2,7 @@
 
 # Shared terminal presentation for ravn-cli.
 # shellcheck disable=SC2317 # This library may be sourced or executed directly.
-if [[ ${_RAVN_CLI_PRESENTATION_SOURCED:-0} -eq 1 ]]; then
+if ((${_RAVN_CLI_PRESENTATION_SOURCED:-0})); then
   return 0 2> /dev/null || exit 0
 fi
 readonly _RAVN_CLI_PRESENTATION_SOURCED=1

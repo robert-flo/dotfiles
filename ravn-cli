@@ -7,10 +7,10 @@ set -Eeuo pipefail
 # import variables and functions #
 #--------------------------------#
 # Resolve the project directory and load shared variables and presentation helpers.
-scrDir="$(dirname "$(realpath "$0")")"
-RUNTIME_DIR="$scrDir/runtime"
+scr_dir="$(dirname "$(realpath "$0")")"
+runtime_dir="$scr_dir/runtime"
 # shellcheck disable=SC1091 # Resolved from the project root.
-source "$RUNTIME_DIR/helper/set_variable.sh"
+source "$runtime_dir/helper/set_variable.sh"
 PROJECT_DIR="$RAVN_CLI_RUNTIME_DIR"
 # shellcheck disable=SC1091
 if ! source "$PROJECT_DIR/lib/presentation.sh"; then
@@ -75,12 +75,16 @@ is_help_command() {
   esac
 }
 
+# Menu rows for non-help commands, indexed in display order (1-based selection).
+RAVN_CLI_MENU_COMMANDS=()
+
 show_menu() {
   local command=""
   local label=""
   local icon=""
   local menu_index=1
 
+  RAVN_CLI_MENU_COMMANDS=()
   echo ""
   print_section "${RAVN_ICON[ui_command]} Choose an action"
   while IFS= read -r command; do
@@ -94,9 +98,10 @@ show_menu() {
       return 1
     }
     icon="$RAVN_CLI_COMMAND_CATALOG_VALUE"
-    if [[ $command == help ]]; then
+    if [[ $command == "help" ]]; then
       echo -e "  ${GREEN}h${NC}  $icon  $label"
     else
+      RAVN_CLI_MENU_COMMANDS+=("$command")
       echo -e "  ${GREEN}$menu_index${NC}  $icon  $label"
       ((menu_index += 1))
     fi
@@ -108,6 +113,7 @@ show_menu() {
 
 run_interactive_menu() {
   local choice=""
+  local selected_index=0
 
   while true; do
     show_menu
@@ -122,7 +128,18 @@ run_interactive_menu() {
         print_info "Goodbye!"
         return 0
         ;;
-      *) print_error "Invalid option" ;;
+      *)
+        if [[ $choice =~ ^[0-9]+$ ]]; then
+          selected_index=$((choice))
+          if ((selected_index >= 1 && selected_index <= ${#RAVN_CLI_MENU_COMMANDS[@]})); then
+            dispatch_command "${RAVN_CLI_MENU_COMMANDS[selected_index - 1]}" || true
+          else
+            print_error "Invalid option"
+          fi
+        else
+          print_error "Invalid option"
+        fi
+        ;;
     esac
     echo ""
     echo -ne "  ${GRAY}Press Enter to continue...${NC}"

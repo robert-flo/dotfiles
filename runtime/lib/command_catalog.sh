@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [[ ${RAVN_CLI_COMMAND_CATALOG_LOADED:-0} == 1 ]]; then
+if ((${RAVN_CLI_COMMAND_CATALOG_LOADED:-0})); then
   return 0
 fi
 readonly RAVN_CLI_COMMAND_CATALOG_LOADED=1
@@ -73,7 +73,7 @@ command_catalog_list() {
 
   for record in "${RAVN_CLI_COMMAND_CATALOG[@]}"; do
     IFS=$'\t' read -r canonical aliases label description icon menu options <<< "$record"
-    if [[ $include_menu == all || $menu == 1 ]]; then
+    if [[ $include_menu == "all" || $menu == "1" ]]; then
       printf '%s\n' "$canonical"
     fi
   done
