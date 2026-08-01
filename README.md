@@ -66,6 +66,25 @@ publishes the GitHub Release.
 The starter `dockerfile.sh` prints `Hello, world!`. Replace it and update the
 Dockerfile as project behavior takes shape.
 
+## ravn-cli product CLI
+
+This monorepo also hosts **ravn-cli**, a modular interactive CLI scaffolded from
+the external **git-setup** template origin (independent evolution). Phase 1 uses
+**construction stubs** (menu and design language without live Git/SSH/GPG setup).
+
+| Entry | Purpose |
+| --- | --- |
+| `./ravn-cli` | Interactive menu or `./ravn-cli <command>` |
+| `make ravn-cli-help` | CLI help without the menu |
+| `make ravn-cli-docker-run` | Ephemeral product container (prefixed; not monorepo `docker-run`) |
+| `bash tests/ravn-cli/t4-process-suite.sh` | Product process-seam tests |
+
+Wayfinding: [docs/ravn-cli/README.md](docs/ravn-cli/README.md),
+[CONTEXT.md](CONTEXT.md) § ravn-cli, [ADR-0011](docs/adr/0011-ravn-cli-scaffolded-from-git-setup.md).
+
+Do not confuse with **ravn-dot** (Config sync TUI) or `make git-setup` (bare
+clone + worktrees).
+
 ## Customize before publishing
 
 - [ ] Rename the repository, update its description, and replace repository URLs.
