@@ -1,12 +1,12 @@
 name: Feature request
-description: Suggest a feature for this project
+description: Suggest a feature for RaVN Dotfiles
 title: "[Feature Request]: Short description of the feature"
 labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
       value: |
-        ## Feature Request
+        ## Feature Request (RaVN Dotfiles)
 
   - type: textarea
     id: description
@@ -21,8 +21,8 @@ body:
     id: use_case
     attributes:
       label: Use Case
-      description: Describe how this feature would be useful to you or to other users of the project.
-      placeholder: Describe how this feature would be useful to you or to other users of the project.
+      description: Describe how this feature would be useful for RaVN Dotfiles users.
+      placeholder: Describe how this feature would be useful for RaVN Dotfiles users.
     validations:
       required: true
 

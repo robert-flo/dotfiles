@@ -1,4 +1,4 @@
-# Pull Request
+# Pull Request (RaVN Dotfiles)
 
 ## Description
 
@@ -36,7 +36,7 @@ Please put an `x` in the boxes that apply:
 - [ ] I did not manually edit `CHANGELOG.md`, `version.txt`, or release tags.
 - [ ] I have added necessary comments/documentation to my code.
 - [ ] I have added tests to cover my changes.
-- [ ] I have tested my code locally and it works as expected.
+- [ ] I have tested my code locally and it works as expected (`make verify` when practical).
 - [ ] All new and existing tests passed.
 
 ## Screenshots
