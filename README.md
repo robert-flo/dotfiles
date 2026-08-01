@@ -66,6 +66,10 @@ publishes the GitHub Release.
 The starter `dockerfile.sh` prints `Hello, world!`. Replace it and update the
 Dockerfile as project behavior takes shape.
 
+Product-specific CLI documentation for this monorepo lives under `docs/` (see
+the repository map and architecture docs) rather than this template-facing
+README.
+
 ## Customize before publishing
 
 - [ ] Rename the repository, update its description, and replace repository URLs.
