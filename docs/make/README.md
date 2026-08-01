@@ -40,6 +40,23 @@ make release-status
 | `make help-hooks` | You are setting up a clone. | Explains Quality Gate installation. |
 | `make help-quality` | You need local validation commands. | Separates formatting from non-mutating checks. |
 | `make help-release` | You are checking release automation. | Lists Release Please diagnostics. |
+| `make help-ravn-cli-git` | You need product workflow Make help. | Lists ravn-cli-prefixed Git/workflow targets. |
+| `make help-ravn-cli-docker` | You need product Docker trials. | Lists ravn-cli-prefixed Docker targets. |
+| `make help-ravn-cli-aliases` | You need product Make aliases. | Lists short product aliases such as ravn-cli-dr. |
+
+## ravn-cli product surface
+
+Prefixed targets only. They do not replace monorepo `make docker-run` or
+`make git-setup` (bare clone + worktrees).
+
+| Command | Use it when | Why it exists |
+| --- | --- | --- |
+| `make ravn-cli-help` | You want CLI help without the interactive menu. | Runs `./ravn-cli help` from the product launcher. |
+| `make ravn-cli-docker-build` | You need a local ravn-cli trial image. | Builds `docker/ravn-cli/*` images with product tags. |
+| `make ravn-cli-docker-run` | You want an ephemeral product container. | Builds if needed and runs `ravn-cli` interactively. |
+| `make ravn-cli-docker-clean` | You want to remove one product trial image. | Removes only managed `ravn-cli:*` tags. |
+| `make ravn-cli-docker-clean-all` | You want to reclaim all product trial images. | Removes every managed `ravn-cli:*` local tag. |
+| `make ravn-cli-dr` | You want a short alias for product docker-run. | Alias for `make ravn-cli-docker-run`. |
 
 ## Git and repository policy
 
