@@ -38,10 +38,20 @@ this map whenever an in-scope file is added, removed, or changes purpose.
 | `runtime/helper/set_variable.sh` | Shared product path and identity variables (`RAVN_CLI_*` and domain paths). |
 | `runtime/lib/command_catalog.sh` | Loads and queries the command catalog for launchers and modules. |
 | `runtime/lib/command_interface.sh` | Shared entrypoint helper for module help versus operation dispatch. |
+| `runtime/lib/configuration.sh` | Construction-example Git config generation helpers (unused by phase-1 stubs). |
 | `runtime/lib/dependencies.sh` | Operational package probes (relaxed in phase 1; structure kept for later). |
 | `runtime/lib/dispatch.sh` | Resolves catalog names and executes command modules as processes. |
+| `runtime/lib/keys.sh` | Construction-example SSH/GPG key lookup helpers (unused by phase-1 stubs). |
 | `runtime/lib/lifecycle.sh` | Runtime cleanup trap shared by the launcher. |
 | `runtime/lib/presentation.sh` | Shared design-language printers, colors, and icons for ravn-cli. |
+| `runtime/completion/ravn-cli.bash` | Bash completion for ravn-cli derived from the command catalog. |
+| `runtime/completion/_ravn-cli` | Zsh completion for ravn-cli derived from the command catalog. |
+| `runtime/templates/git/config` | Template for managed Git config generation (construction example). |
+| `runtime/templates/git/delta.gitconfig` | Template for delta presentation config. |
+| `runtime/templates/git/gitattributes.global` | Template for global gitattributes. |
+| `runtime/templates/git/gitconfig_aliases` | Template for Git aliases. |
+| `runtime/templates/git/gitignore.global` | Template for global gitignore. |
+| `runtime/templates/git/shell_aliases` | Template for shell Git/GitHub shortcuts. |
 | `runtime/scripts/clean` | Construction stub for cleanup (phase 1 exits non-zero; no deletions). |
 | `runtime/scripts/config` | Construction stub for managed Git configuration refresh. |
 | `runtime/scripts/demo` | Phase-1 construction stub demonstrating a numbered menu command module. |
@@ -73,6 +83,33 @@ this map whenever an in-scope file is added, removed, or changes purpose.
 | `.github/workflows/ci.yml` | Runs the repository verification suite on GitHub before changes are integrated. |
 | `.github/workflows/lock.yml` | Locks inactive conversations to keep issue and pull-request discussions manageable. |
 | `.github/workflows/release-please.yml` | Lets Release Please prepare releases and publish verified release assets. |
+
+## Product workflow companions (construction examples)
+
+Portable workflow companions under `make/ravn-cli/workflow/` are construction
+examples from the template origin. Phase-1 stubs must not install them into the
+user bin directory.
+
+| File | Purpose and reason |
+| --- | --- |
+| `make/ravn-cli/workflow/.git-workflow` | Shared helper sourced by managed workflow companions. |
+| `make/ravn-cli/workflow/a` | Portable companion for the `a` workflow surface. |
+| `make/ravn-cli/workflow/ac` | Portable companion for the `ac` workflow surface. |
+| `make/ravn-cli/workflow/af` | Portable companion for the `af` workflow surface. |
+| `make/ravn-cli/workflow/bye` | Portable companion for the `bye` workflow surface. |
+| `make/ravn-cli/workflow/c` | Portable companion for the `c` workflow surface. |
+| `make/ravn-cli/workflow/clean` | Portable companion for the `clean` workflow surface. |
+| `make/ravn-cli/workflow/cm` | Portable companion for the `cm` workflow surface. |
+| `make/ravn-cli/workflow/d` | Portable companion for the `d` workflow surface. |
+| `make/ravn-cli/workflow/df` | Portable companion for the `df` workflow surface. |
+| `make/ravn-cli/workflow/fc` | Portable companion for the `fc` workflow surface. |
+| `make/ravn-cli/workflow/fm` | Portable companion for the `fm` workflow surface. |
+| `make/ravn-cli/workflow/fuck` | Portable companion for the `fuck` workflow surface. |
+| `make/ravn-cli/workflow/l` | Portable companion for the `l` workflow surface. |
+| `make/ravn-cli/workflow/lg` | Portable companion for the `lg` workflow surface. |
+| `make/ravn-cli/workflow/p` | Portable companion for the `p` workflow surface. |
+| `make/ravn-cli/workflow/s` | Portable companion for the `s` workflow surface. |
+| `make/ravn-cli/workflow/st` | Portable companion for the `st` workflow surface. |
 
 ## Make command modules
 
