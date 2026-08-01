@@ -40,10 +40,10 @@ fi
 
 # Optional smoke: non-interactive help inside a built image when docker is available.
 if command -v docker > /dev/null 2>&1; then
-  docker build --file docker/ravn-cli/Dockerfile --tag ravn-cli:local-test "$ROOT_DIR" > /tmp/ravn-cli-docker-build.out 2>&1 \
-    || fail "docker build failed (see /tmp/ravn-cli-docker-build.out)"
-  docker run --rm --env RAVN_CLI_DOCKER_TRIAL=1 ravn-cli:local-test help > /tmp/ravn-cli-docker-help.out 2>&1 \
-    || fail "docker run help failed"
+  docker build --file docker/ravn-cli/Dockerfile --tag ravn-cli:local-test "$ROOT_DIR" > /tmp/ravn-cli-docker-build.out 2>&1 ||
+    fail "docker build failed (see /tmp/ravn-cli-docker-build.out)"
+  docker run --rm --env RAVN_CLI_DOCKER_TRIAL=1 ravn-cli:local-test help > /tmp/ravn-cli-docker-help.out 2>&1 ||
+    fail "docker run help failed"
   require_output /tmp/ravn-cli-docker-help.out 'ravn-cli'
   docker image rm ravn-cli:local-test > /dev/null 2>&1 || true
 else
