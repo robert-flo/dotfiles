@@ -38,20 +38,19 @@ require_exec "$DEMO_MODULE"
 HOME_DIR="$TEST_ROOT/home"
 mkdir -p "$HOME_DIR"
 
+run_with_test_env() {
+  local cmd="$1"
+  shift
+  env -C "$TEST_ROOT" HOME="$HOME_DIR" XDG_CONFIG_HOME="$HOME_DIR/.config" \
+    TERM=dumb NO_COLOR=1 "$cmd" "$@"
+}
+
 run_cli() {
-  (
-    cd "$TEST_ROOT"
-    HOME="$HOME_DIR" XDG_CONFIG_HOME="$HOME_DIR/.config" TERM=dumb NO_COLOR=1 \
-      "$RAVN_CLI" "$@"
-  )
+  run_with_test_env "$RAVN_CLI" "$@"
 }
 
 run_module() {
-  (
-    cd "$TEST_ROOT"
-    HOME="$HOME_DIR" XDG_CONFIG_HOME="$HOME_DIR/.config" TERM=dumb NO_COLOR=1 \
-      "$HELP_MODULE" "$@"
-  )
+  run_with_test_env "$HELP_MODULE" "$@"
 }
 
 # Help via launcher does not require git/gh/gpg/delta.
@@ -81,11 +80,7 @@ fi
 # Direct construction stub via launcher and module path.
 run_cli demo > "$TEST_ROOT/demo-launcher.out" 2>&1
 require_output "$TEST_ROOT/demo-launcher.out" "hola desde demo"
-(
-  cd "$TEST_ROOT"
-  HOME="$HOME_DIR" XDG_CONFIG_HOME="$HOME_DIR/.config" TERM=dumb NO_COLOR=1 \
-    "$DEMO_MODULE"
-) > "$TEST_ROOT/demo-module.out" 2>&1
+run_with_test_env "$DEMO_MODULE" > "$TEST_ROOT/demo-module.out" 2>&1
 require_output "$TEST_ROOT/demo-module.out" "hola desde demo"
 
 # Interactive menu: design language, numbered demo, h help, q exit.
